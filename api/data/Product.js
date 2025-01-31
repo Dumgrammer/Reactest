@@ -32,4 +32,4 @@ const products = [
 
 
 
-module.exports = Products;
+module.exports = products;

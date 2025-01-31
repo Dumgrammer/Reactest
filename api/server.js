@@ -1,9 +1,10 @@
-const express = require('express')
-const app = express()
 require('dotenv').config();
-const port = process.env.PORT
+const http = require('http');
+const app = require('./app');
+const port = process.env.PORT;
 
+const server = http.createServer(app);
 
-app.listen(port || 8080, () => {
-    console.log(`Example app listening on port ${port}!`)
+server.listen(port || 8080, () => {
+    console.log(`GC_Coop listening on port ${port}!`)
 });
