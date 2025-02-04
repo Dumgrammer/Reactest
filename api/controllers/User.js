@@ -44,12 +44,16 @@ exports.userLogin = async (req, res) => {
 
 exports.userRegister = async(req, res) => {
     try {
-        const {  firstname, middlename, lastname, email, password } = req.body;
+        const {  firstname, middlename, lastname, email, password, confirmationpass } = req.body;
 
         const existingUser = await User.findOne({ email: email });
 
         if (existingUser) {
             return send.sendBadRequestResponse(res, "User Already Registered!");
+        }
+
+        if (password !== confirmationpass) {
+            return send.sendBadRequestResponse(res, "Invalid Password!");
         }
 
         const hashedPassword = await argon2.hash(password, 10);
