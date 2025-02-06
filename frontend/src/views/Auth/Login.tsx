@@ -10,7 +10,7 @@ export default function Login() {
     const [password, setPassword] = useState('');
 
     const userLoginReducer = useSelector((state: any) => state.userLoginReducer);
-    const { loading, error, userInfo } = userLoginReducer;
+    const { loading, error } = userLoginReducer;
 
     const dispatch = useDispatch<AppDispatch>();
 
