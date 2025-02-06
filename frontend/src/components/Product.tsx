@@ -12,7 +12,7 @@ function Product() {
 
   useEffect(() => {
     // Check if the loading state is false before dispatching the action
-    if (loading && !products.length) {
+    if (!loading && !products.length) {
       dispatch(productListAction());
     }
   }, [dispatch, loading, products.length]);
