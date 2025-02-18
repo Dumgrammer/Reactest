@@ -1,6 +1,3 @@
-import { DarkThemeToggle } from "flowbite-react";
-import Layout from "./Layout/Layouts";
-import Product from "./components/Product";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import ProductDetail from "./views/ProductDetails";
 import Home from "./views/Home";

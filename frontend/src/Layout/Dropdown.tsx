@@ -16,7 +16,7 @@ export default function Dropdown() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative pr-2">
       <button
         id="dropdownDefaultButton"
         onClick={() => setIsOpen(!isOpen)}
