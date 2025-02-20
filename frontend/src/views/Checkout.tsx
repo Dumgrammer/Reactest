@@ -3,7 +3,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch } from '../Redux/Store'
 import { removeItemToCart } from '../Redux/Constants/Cart';
-import { removeItemToCartAction } from '../Redux/Actions/Cart';
+import { addToCartAction, removeItemToCartAction } from '../Redux/Actions/Cart';
 
 
 
@@ -24,6 +24,12 @@ export default function CheckOut({ open, setOpen }: CheckOutProps) {
     const removeFromCartHandler = (id: string) => {
         dispatch(removeItemToCartAction(id))
     }
+
+    const addToCartHandler = (id: string, quantity: number) => {
+        dispatch(addToCartAction(id, quantity))
+    }
+
+    const total = cartItems.reduce((total: number, item: any) => total + item.quantity * item.price, 0).toFixed(2)
 
     return (
         <Dialog open={open} onClose={() => setOpen(false)} className="relative z-10">
@@ -75,7 +81,20 @@ export default function CheckOut({ open, setOpen }: CheckOutProps) {
                                                                 </div>
                                                             </div>
                                                             <div className="flex flex-1 items-end justify-between text-sm">
-                                                                <p className="text-gray-500">Qty {product.quantity}</p>
+                                                                <p className="text-gray-500">Qty
+                                                                    <select value={product.quantity}
+                                                                        onChange={(count: any) => addToCartHandler(product.product, Number(count.target.value))} 
+                                                                        className="rounded border ml-2 appearance-none border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 text-base pl-3 pr-10">
+
+                                                                        {
+                                                                            Array.from({ length: product.countInStock }, (_, i) => i + 1).map((x) => (
+                                                                                <option key={x} value={x}>{x}</option>
+                                                                            ))
+                                                                        }
+
+
+
+                                                                    </select></p>
 
                                                                 <div className="flex">
                                                                     <button onClick={() => removeFromCartHandler(product.product)} type="button" className="font-medium text-indigo-600 hover:text-indigo-500">
@@ -94,7 +113,7 @@ export default function CheckOut({ open, setOpen }: CheckOutProps) {
                                 <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                                     <div className="flex justify-between text-base font-medium text-gray-900">
                                         <p>Subtotal</p>
-                                        <p>$262.00</p>
+                                        <p>${total}</p>
                                     </div>
                                     <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
                                     <div className="mt-6">
