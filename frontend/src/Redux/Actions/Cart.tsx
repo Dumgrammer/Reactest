@@ -41,14 +41,19 @@ export const removeItemToCartAction = (id: string) => (dispatch: any, getState: 
     localStorage.setItem("cartItems", JSON.stringify(cartState.cartItems));
 }
 
-export const saveShippingAddressAction = (data: string[]) => (dispatch: any) => {
+export const saveShippingAddressAction = (data: { 
+    address: string; 
+    city: string; 
+    code: string; 
+    country: string; 
+}) => (dispatch: any) => {
     dispatch({ 
         type: cartSaveShippingAddress, 
         payload: data 
     });
-    
-    localStorage.setItem("shippinAddress", JSON.stringify(data));
-}
+
+    localStorage.setItem("shippingAddress", JSON.stringify(data));
+};
 
 export const savePaymentMethodAction = (data: string[]) => (dispatch: any) => {
     dispatch({ 

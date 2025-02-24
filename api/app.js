@@ -45,6 +45,11 @@ app.use('/api/products', productRoutes);
 //URL Path for Orders
 app.use('/api/orders', orderRoutes);
 
+//paypal integration
+app.use('/api/config/paypal', (req, res) => {
+    res.send(process.env.PAYPAL_CLIENT);
+});
+
 app.use((req, res, next) => {
     const error = new Error('Not Found');
     error.status = 404;

@@ -3,6 +3,7 @@ import ProductDetail from "./views/ProductDetails";
 import Home from "./views/Home";
 import Login from "./views/Auth/Login";
 import Register from "./views/Auth/Register";
+import PlaceOrder from "./views/PlaceOrder";
 import { useSelector } from "react-redux";
 
 
@@ -19,6 +20,7 @@ const { userInfo } = userLoginReducer;
       <Route path="/products/:id" element={<ProductDetail/>}></Route>
       <Route path="/login" element={userInfo ? <Navigate to="/"></Navigate> : <Login/>} ></Route>
       <Route path="/register" element={userInfo ? <Navigate to="/"></Navigate> : <Register/>}></Route>
+      <Route path="/placeorder" element={<PlaceOrder/>}></Route>
     </Routes>
   </Router>
   );
