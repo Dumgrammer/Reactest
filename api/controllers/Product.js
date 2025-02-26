@@ -34,7 +34,7 @@ exports.addNewProduct = async(req, res) => {
     try {
         
         const { name, image, description, rating, numReview, price, countInStock } = req.body;
-
+        
     } catch (error) {
         
     }

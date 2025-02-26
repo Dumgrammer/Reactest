@@ -5,6 +5,9 @@ import Login from "./views/Auth/Login";
 import Register from "./views/Auth/Register";
 import PlaceOrder from "./views/PlaceOrder";
 import { useSelector } from "react-redux";
+import Sidenav from "./Layout/Sidenav";
+import Card from "./components/Card";
+import Admin from "./views/Admin";
 
 
 
@@ -21,6 +24,7 @@ const { userInfo } = userLoginReducer;
       <Route path="/login" element={userInfo ? <Navigate to="/"></Navigate> : <Login/>} ></Route>
       <Route path="/register" element={userInfo ? <Navigate to="/"></Navigate> : <Register/>}></Route>
       <Route path="/placeorder" element={<PlaceOrder/>}></Route>
+      <Route path="/admin" element={<Admin/>}></Route>
     </Routes>
   </Router>
   );
