@@ -1,3 +1,4 @@
+const { where, findById, updateOne } = require('../models/Order');
 const Product = require('../models/Product');
 const send = require('../utils/Response');
 
@@ -30,12 +31,63 @@ exports.getSpecificProduct = async(req, res) => {
     }
 }
 
-exports.addNewProduct = async(req, res) => {
+exports.createProduct = async (req, res) => {
     try {
-        
-        const { name, image, description, rating, numReview, price, countInStock } = req.body;
-        
+
+        const { name, description, rating, numReview, price, countInStock } = req.body;
+
+        const product = new Product({
+            name,
+            image: req.file.path,
+            description,
+            rating,
+            numReview,
+            price,
+            countInStock
+        });
+
+        const newProduct = await product.save(); 
+        return send.sendResponse(res, 200, newProduct, "Product created succuesfully!");
+
     } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};
+
+exports.updateProduct = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const existingProduct = await Product.findById(id);
         
+        if (!existingProduct) {
+            return send.sendNotFoundResponse(res, "Product not found!");
+        }
+
+        const updatedProduct = await Product.updateOne({_id: id}, {$set: req.body});
+
+        return send.sendResponse(res, 203, updatedProduct, "Product has been updated successfully!");
+
+    } catch (error) {
+        return send.sendISEResponse(res, error);
     }
 }
+
+exports.deleteProduct = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const existingProduct = await Product.findById(id);
+        
+        if (!existingProduct) {
+            return send.sendNotFoundResponse(res, "Product not found!");
+        }
+
+        const deletedProduct = await Product.deleteOne({ _id: id });
+
+        return send.sendResponse(res, 200, deletedProduct, "Product deleted successfully!");
+
+    } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};
