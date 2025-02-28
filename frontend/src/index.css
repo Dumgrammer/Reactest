@@ -1,3 +1,30 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+*{
+    font-family: sans-serif;
+}
+
+.p-btn {
+    background: rgb(21 152 75);
+    color: white;
+}
+
+.p-btn:hover {
+    background: rgb(15, 105, 51);
+}
+
+.h1 {
+    text-align: center;
+    color: black;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+.mid-flex {
+    display: flex;
+    min-height: 75dvh;
+    align-items: center;
+}

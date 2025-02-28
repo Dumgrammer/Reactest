@@ -9,6 +9,8 @@ import { addToCartAction } from "../Redux/Actions/Cart";
 
 export default function ProductDetail() {
 
+    const [selectedType, setSelectedType] = useState('');
+
     const { id } = useParams();
 
     const dispatch = useDispatch<AppDispatch>();
@@ -62,7 +64,7 @@ export default function ProductDetail() {
                                                 </svg>
                                                 <span className="text-gray-600 ml-3">{prod.numReview} Reviews</span>
                                             </span>
-                                            <span className="flex ml-3 pl-3 py-2 border-l-2 border-gray-200 space-x-2s">
+                                            {/* <span className="flex ml-3 pl-3 py-2 border-l-2 border-gray-200 space-x-2s">
                                                 <a className="text-gray-500">
                                                     <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" className="w-5 h-5" viewBox="0 0 24 24">
                                                         <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path>
@@ -78,57 +80,48 @@ export default function ProductDetail() {
                                                         <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"></path>
                                                     </svg>
                                                 </a>
-                                            </span>
+                                            </span> */}
                                         </div>
                                         <p className="leading-relaxed">{prod.description}</p>
                                         <div className="flex mt-6 items-center pb-5 border-b-2 border-gray-100 mb-5">
-                                            <div className="flex">
-                                                <span className="mr-3">Color</span>
-                                                <button className="border-2 border-gray-300 rounded-full w-6 h-6 focus:outline-none"></button>
-                                                <button className="border-2 border-gray-300 ml-1 bg-gray-700 rounded-full w-6 h-6 focus:outline-none"></button>
-                                                <button className="border-2 border-gray-300 ml-1 bg-indigo-500 rounded-full w-6 h-6 focus:outline-none"></button>
-                                            </div>
+    <div className="flex items-center">
+        <span className="mr-3">Type</span>
+        <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)} className="rounded border border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 text-base pl-3 pr-10">
+            {/* Replace these options with your actual product types */}
+            <option value="">Select Type</option>
+            <option value="type1">Type 1</option>
+            <option value="type2">Type 2</option>
+            <option value="type3">Type 3</option>
+        </select>
+    </div>
 
-                                            {
-                                                prod.countInStock > 0 ? (
-                                                    <div className="flex ml-6 items-center">
-                                                        <span className="mr-3">Quantity</span>
-                                                        <div className="relative">
-                                                            <select value={quantity} onChange={(count: any) => setQty(parseInt(count.target.value, 10))} className="rounded border appearance-none border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 text-base pl-3 pr-10">
-
-                                                                {
-                                                                    Array.from({ length: prod.countInStock }, (_, i) => i + 1).map((x) => (
-                                                                        <option key={x} value={x}>{x}</option>
-                                                                    ))
-                                                                }
-
-
-
-                                                            </select>
-                                                            <span className="absolute right-0 top-0 h-full w-10 text-center text-gray-600 pointer-events-none flex items-center justify-center">
-                                                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" className="w-4 h-4" viewBox="0 0 24 24">
-                                                                    <path d="M6 9l6 6 6-6"></path>
-                                                                </svg>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                ) : (
-                                                    <>
-
-                                                    </>
-                                                )
-                                            }
-
-
-
-                                        </div>
+    {
+        prod.countInStock > 0 ? (
+            <div className="flex ml-6 items-center">
+                <span className="mr-3">Quantity</span>
+                <input
+                    type="number"
+                    min="1"
+                    max={prod.countInStock}
+                    value={quantity}
+                    onChange={(e) => {
+                        const value = Math.max(1, Math.min(prod.countInStock, parseInt(e.target.value, 10) || 0));
+                        setQty(value);
+                    }}
+                    className="rounded border border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 text-base"
+                />
+            </div>
+        ) : (
+            <></>
+        )
+    }
+</div>
                                         <div className="flex">
                                             <span className="title-font font-medium text-2xl text-gray-900">${prod.price}</span>
 
                                             {
                                                 prod.countInStock > 0 ? (
-                                                    <button onClick={addToCartHandler} className="flex ml-auto text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded">Add to cart</button>
+                                                    <button onClick={addToCartHandler} className="flex ml-auto p-btn border-0 py-2 px-6 focus:outline-none  rounded">Add to cart</button>
                                                 ) : (
                                                     <>
                                                     <button disabled className="cursor-not-allowed flex ml-auto text-white bg-gray-500 border-0 py-2 px-6 focus:outline-none hover:bg-gray-700 rounded">Unavailable</button>
