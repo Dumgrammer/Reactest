@@ -5,8 +5,6 @@ import Login from "./views/Auth/Login";
 import Register from "./views/Auth/Register";
 import PlaceOrder from "./views/PlaceOrder";
 import { useSelector } from "react-redux";
-import Sidenav from "./Layout/Sidenav";
-import Card from "./components/Card";
 import Admin from "./views/Admin";
 import ProductsList from "./views/ProductsList";
 

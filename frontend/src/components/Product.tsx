@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from "../Redux/Store";
 import { productListAction } from "../Redux/Actions/Product";
 import { Link } from "react-router-dom";
+import Carousel from "./Carousel";
 
 
 function Product() {
@@ -26,7 +27,10 @@ function Product() {
       ) : (
         <>
           <section className="text-gray-600 body-font">
-            <div className="container px-5 py-24 mx-auto">
+            <div className="container mx-auto">
+
+<Carousel></Carousel>
+
               <div className="flex flex-wrap -m-4">
                 {products && products.length > 0 ? (
                   products.map((product: any) => (
