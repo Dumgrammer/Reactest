@@ -36,6 +36,12 @@ exports.createProduct = async (req, res) => {
 
         const { name, description, rating, numReview, price, countInStock } = req.body;
 
+        if (!req.file) {
+            return res.status(400).json({ message: "Image upload failed!" });
+        }
+
+        console.log("File uploaded at:", req.file.path);
+
         const product = new Product({
             name,
             image: req.file.path,
@@ -50,6 +56,7 @@ exports.createProduct = async (req, res) => {
         return send.sendResponse(res, 200, newProduct, "Product created succuesfully!");
 
     } catch (error) {
+        console.log(error)
         return send.sendISEResponse(res, error);
     }
 };

@@ -1,15 +1,19 @@
 import { Action } from "redux";
-import { 
+import {
 
-    productListReq,
-    productListReqSucess,
-    productListReqFail,
+        productListReq,
+        productListReqSucess,
+        productListReqFail,
 
-    productDetailReq,
-    productDetailReqSuccess,
-    productDetailReqFail
+        productDetailReq,
+        productDetailReqSuccess,
+        productDetailReqFail,
 
- }  from "../Constants/Product";
+        productAddReq,
+        productAddSuccess,
+        productAddFail
+
+} from "../Constants/Product";
 
 //Interfaces for proper statecontrol
 interface ProductListState {
@@ -19,50 +23,68 @@ interface ProductListState {
         page?: number;
         error?: any;
 }
-    
+
 interface ProductDetailState {
         loading?: boolean;
         product: { reviews: any[] };
         error?: any;
 }
 
-interface ActionType extends Action{
+interface ActionType extends Action {
         payload?: any;
         [key: string]: any;
 }
 
+interface ProductState {
+        loading?: boolean;
+        success?: boolean;
+        error?: any;
+}
 //List  of products
 
- export const productListReducers  = (state: ProductListState = { products: [] }, action: ActionType): ProductListState => {
-    switch (action.type) {
-        case productListReq:
-                return { loading : true, products: [] }
+export const productListReducers = (state: ProductListState = { products: [] }, action: ActionType): ProductListState => {
+        switch (action.type) {
+                case productListReq:
+                        return { loading: true, products: [] }
 
-        case productListReqSucess:
-                return { loading: false, products: action.payload.data, totalPage: action.payload.totalPage, page: action.payload.page }
-        
-        case productListReqFail:
-                return  { loading: false, products: [], error:  action.payload.error }
+                case productListReqSucess:
+                        return { loading: false, products: action.payload.data, totalPage: action.payload.totalPage, page: action.payload.page }
 
-        default:
-                return state
+                case productListReqFail:
+                        return { loading: false, products: [], error: action.payload.error }
+
+                default:
+                        return state
         }
 }
 
- //Specific product for id
-
- export const productDetailReducers  = (state: ProductDetailState = { product: { reviews: [] } }, action: ActionType): ProductDetailState => {
+export const productAddReducer = (state: ProductState = {}, action: ActionType): ProductState => {
         switch (action.type) {
-            case productDetailReq:
-                    return { loading : true, ...state }
-    
-            case productDetailReqSuccess:
-                    return { loading: false, product: action.payload }
-            
-            case productDetailReqFail:
-                    return  { loading: false, product: { reviews: [] }, error: action.payload.error }
-    
-            default:
-                    return state
+                case productAddReq:
+                        return { loading: true };
+                case productAddSuccess:
+                        return { loading: false, success: true };
+                case productAddFail:
+                        return { loading: false, error: action.payload };
+                default:
+                        return state;
+        }
+};
+
+//Specific product for id
+
+export const productDetailReducers = (state: ProductDetailState = { product: { reviews: [] } }, action: ActionType): ProductDetailState => {
+        switch (action.type) {
+                case productDetailReq:
+                        return { loading: true, ...state }
+
+                case productDetailReqSuccess:
+                        return { loading: false, product: action.payload }
+
+                case productDetailReqFail:
+                        return { loading: false, product: { reviews: [] }, error: action.payload.error }
+
+                default:
+                        return state
         }
 }

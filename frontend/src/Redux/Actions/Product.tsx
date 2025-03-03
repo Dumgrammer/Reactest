@@ -9,7 +9,10 @@ import {
 
     productDetailReq,
     productDetailReqSuccess,
-    productDetailReqFail
+    productDetailReqFail,
+    productAddFail,
+    productAddReq,
+    productAddSuccess
  }  from "../Constants/Product";
 
 export const productListAction = () => async (dispatch: AppDispatch) => {
@@ -35,3 +38,29 @@ export const productDetailAction = (id: any) => async (dispatch: AppDispatch) =>
         dispatch({type: productDetailReqFail, payload: error.response && error.response.data.message ? error.response.data.message : error.message });
     }
 }
+
+export const addProductAction = (productData: FormData) => async (dispatch: AppDispatch) => {
+    try {
+        dispatch({ type: productAddReq });
+
+        const { data } = await axios.post(`${baseUrl}/api/products/createproduct`, productData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+
+        console.log("Product Added:", data);
+
+        dispatch({ type: productAddSuccess, payload: data });
+
+    } catch (error: any) {
+        console.error("Product Add Error:", error.response?.data || error.message);
+        
+        dispatch({
+            type: productAddFail,
+            payload: error.response?.data?.message || error.message,
+        });
+    }
+};
+
+

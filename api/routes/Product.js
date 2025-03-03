@@ -22,7 +22,7 @@ const fileFilter = (req, file, cb) => {
     if (!allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error("Invalid File Type!"), false)
+        cb(new Error("Invalid File Type!"), false);
     }
 }
 
