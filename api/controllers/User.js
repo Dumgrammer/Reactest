@@ -28,6 +28,7 @@ exports.userLogin = async (req, res) => {
         const data = {
             _id: existingUser.id,
             name: existingUser.firstname + ' ' + existingUser.middlename + ' ' + existingUser.lastname,
+            email: existingUser.email,
             isAdmin: existingUser.isAdmin,
             token:  generateToken.generateToken(existingUser.id),
             createdAt: existingUser.createdAt

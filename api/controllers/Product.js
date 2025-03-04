@@ -2,34 +2,43 @@ const { where, findById, updateOne } = require('../models/Order');
 const Product = require('../models/Product');
 const send = require('../utils/Response');
 
-exports.getProduct = async(req, res) => {
+exports.getProduct = async (req, res) => {
     try {
-        
         const products = await Product.find({});
 
-        return send.sendResponse(res, 200, products, "Products found!");
+        const updatedProducts = products.map(product => {
+            if (!product.image.startsWith("http")) {
+                product.image = `${req.protocol}://${req.get("host")}/${product.image.replace(/\\/g, "/")}`;
+            }
+            return product;
+        });
 
+        return send.sendResponse(res, 200, updatedProducts, "Products found!");
     } catch (error) {
         return send.sendISEResponse(res, error);
     }
-}
+};
 
-exports.getSpecificProduct = async(req, res) => {
+exports.getSpecificProduct = async (req, res) => {
     try {
-        
         const id = req.params.id;
-        const products = await Product.findById(id);
+        const product = await Product.findById(id);
 
-        if (!products) {
+        if (!product) {
             return send.sendNotFoundResponse(res, "Product Not Found!");
         }
 
-        return send.sendResponse(res, 200, products, "Products found!");
+        // Ensure local images are formatted correctly
+        if (!product.image.startsWith("http")) {
+            product.image = `${req.protocol}://${req.get("host")}/${product.image.replace(/\\/g, "/")}`;
+        }
 
+        return send.sendResponse(res, 200, product, "Product found!");
     } catch (error) {
         return send.sendISEResponse(res, error);
     }
-}
+};
+
 
 exports.createProduct = async (req, res) => {
     try {

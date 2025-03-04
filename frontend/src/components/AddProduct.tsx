@@ -1,31 +1,23 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../Redux/Store";
-import { productListAction } from "../Redux/Actions/Product";
+import { addProductAction } from "../Actions/Product";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onProductAdded: () => void;
 }
 
-const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
-
-  const dispatch = useDispatch<AppDispatch>();
-  const productListReducer = useSelector((state: any) => state.productListReducer);
-  const { loading, error, products = [], page, totalPages } = productListReducer;
-
+const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded }) => {
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [countInStock, setCountInStock] = useState("");
   const [image, setImage] = useState<File | null>(null);
-  const [rating, setRating] = useState("5");
-  const [numReview, setNumReview] = useState("0");
+  const [rating] = useState("5");
+  const [numReview] = useState("0");
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log("Submit button clicked");
 
     const formData = new FormData();
     formData.append("name", productName);
@@ -37,18 +29,12 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     if (image) {
       formData.append("image", image);
     }
-    
+
     try {
-      const { data } = await axios.post("http://localhost:8080/api/products/createproduct", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });      
-      dispatch(productListAction())
-      console.log("Product created:", data);
-      onClose();
+      await addProductAction(formData);
+      onProductAdded();
     } catch (error) {
-      console.error("Failed to add product:", error);
+      console.error("Error adding product:", error);
     }
   };
 
@@ -65,7 +51,7 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           <input type="number" placeholder="Price" value={productPrice} onChange={(e) => setProductPrice(e.target.value)} required />
           <input type="number" placeholder="Stock" value={countInStock} onChange={(e) => setCountInStock(e.target.value)} required />
           <input type="file" onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)} accept="image/*" required />
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Add Product</button>
+          <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">Add Product</button>
         </form>
       </div>
     </div>

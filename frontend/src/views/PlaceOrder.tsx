@@ -4,14 +4,11 @@ import CartItems from "../components/CartItems";
 import { useEffect, useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
-import { baseUrl } from "../Redux/Constants/BaseUrl";
-import { orderAction } from "../Redux/Actions/Order";
-import { AppDispatch } from "../Redux/Store";
-import { saveShippingAddressAction } from "../Redux/Actions/Cart";
+import { baseUrl } from "../Constants/BaseUrl";
+import { saveShippingAddressAction } from "../Actions/Cart";
 
 export default function PlaceOrder() {
 
-    const dispatch = useDispatch<AppDispatch>();
 
     const cart = useSelector((state: any) => state.cartReducer);
 
@@ -48,33 +45,6 @@ export default function PlaceOrder() {
 
         //sets the ClientId from the api    
         setClientId(fetchedClientId);
-    };
-
-    const successPaymentHandler = async (paymentResult: any) => {
-        try {
-            dispatch(orderAction({
-                orderItems: cart.cartItems,
-                shippingAddress: cart.shippingAddress,
-                totalPrice: total,
-                paymentMethod: 'paypal',
-                price: subTotal,
-                shippingPrice: shippingFee,
-                taxPrice: shippingFee
-            }))
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    const saveShippingAddress = () => {
-       dispatch(
-        saveShippingAddressAction({
-            address,
-            city,
-            code,
-            country
-        })
-       );
     };
 
 
@@ -122,7 +92,7 @@ export default function PlaceOrder() {
                                 <input type="text" id="country" name="country" value={country} onChange={(e: any) => setCountry(e.target.value)} className="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out" />
                             </div>
 
-                            <button onClick={saveShippingAddress}
+                            <button 
                             className="mb-10 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200">
                                 Save Shipping Address
                             </button>
@@ -143,19 +113,7 @@ export default function PlaceOrder() {
                                                 ]
                                             });
                                         }}
-                                        onApprove={(data, actions) => {
-                                            if (!actions || !actions.order) {
-                                              console.error("PayPal order actions are undefined.");
-                                              return Promise.reject(new Error("PayPal order actions are missing"));
-                                            }
-                                          
-                                            return actions.order.capture().then((details) => {
-                                              console.log("Payment Success:", details);
-                                              successPaymentHandler(details);
-                                            }).catch(error => {
-                                              console.error("Error capturing order:", error);
-                                            });
-                                          }}
+
                                           
                                           
                                     />

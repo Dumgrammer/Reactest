@@ -1,4 +1,3 @@
-import Footer from "./Footer";
 import Sidenav from "./Sidenav";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }){

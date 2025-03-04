@@ -1,19 +1,8 @@
 import { useDispatch } from "react-redux";
-import { removeItemToCartAction, addToCartAction } from "../Redux/Actions/Cart";
-import { AppDispatch } from "../Redux/Store";
+import { removeItemToCartAction, addToCartAction } from "../Actions/Cart";
 
 export default function CartItems({ cartItems }: any) {
     
-    const dispatch = useDispatch<AppDispatch>();
-    
-    const removeFromCartHandler = (id: string) => {
-        dispatch(removeItemToCartAction(id))
-    }
-
-    const addToCartHandler = (id: string, quantity: number) => {
-        dispatch(addToCartAction(id, quantity))
-    }
-
     return (
         <div className="mt-8">
             <div className="flow-root">
@@ -36,7 +25,7 @@ export default function CartItems({ cartItems }: any) {
                                 <div className="flex flex-1 items-end justify-between text-sm">
                                     <p className="text-gray-500">Qty
                                         <select value={product.quantity}
-                                            onChange={(count: any) => addToCartHandler(product.product, Number(count.target.value))}
+        
                                             className="rounded border ml-2 appearance-none border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 text-base pl-3 pr-10">
 
                                             {
@@ -50,7 +39,7 @@ export default function CartItems({ cartItems }: any) {
                                         </select></p>
 
                                     <div className="flex">
-                                        <button onClick={() => removeFromCartHandler(product.product)} type="button" className="font-medium text-indigo-600 hover:text-indigo-500">
+                                        <button type="button" className="font-medium text-indigo-600 hover:text-indigo-500">
                                             Remove
                                         </button>
                                     </div>

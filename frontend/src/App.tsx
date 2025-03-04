@@ -4,30 +4,50 @@ import Home from "./views/Home";
 import Login from "./views/Auth/Login";
 import Register from "./views/Auth/Register";
 import PlaceOrder from "./views/PlaceOrder";
-import { useSelector } from "react-redux";
-import Sidenav from "./Layout/Sidenav";
-import Card from "./components/Card";
 import Admin from "./views/Admin";
 import ProductsList from "./views/ProductsList";
+import { useState, useEffect } from "react";
 
-
+interface UserInfo {
+  id: string;
+  name: string;
+  email: string;
+}
 
 function App() {
 
-const userLoginReducer = useSelector((state: any)=>state.userLoginReducer);
-const { userInfo } = userLoginReducer;
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(() => {
+    try {
+      const storedUser = localStorage.getItem("userInfo");
+      return storedUser ? (JSON.parse(storedUser) as UserInfo) : null;
+    } catch (error) {
+      console.error("Error parsing userInfo:", error);
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedUser = localStorage.getItem("userInfo");
+      setUserInfo(storedUser ? (JSON.parse(storedUser) as UserInfo) : null);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
 
   return (
     <Router>
-    <Routes>
-      <Route path="/" element={<Home/>}></Route>
-      <Route path="/products/:id" element={<ProductDetail/>}></Route>
-      <Route path="/login" element={userInfo ? <Navigate to="/"></Navigate> : <Login/>} ></Route>
-      <Route path="/register" element={userInfo ? <Navigate to="/"></Navigate> : <Register/>}></Route>
-      <Route path="/placeorder" element={<PlaceOrder/>}></Route>
-      <Route path="/admin" element={<Admin/>}></Route>
-      <Route path="/admin/products" element={<ProductsList/>}></Route>
-    </Routes>
+      <Routes>
+        <Route path="/" element={<Home/>}></Route>
+        <Route path="/products/:id" element={<ProductDetail/>}></Route>
+        <Route path="/login" element={<Login/>} ></Route>
+        <Route path="/register" element={<Register/>}></Route>
+        <Route path="/placeorder" element={<PlaceOrder/>}></Route>
+        <Route path="/admin" element={<Admin/>}></Route>
+        <Route path="/admin/products" element={<ProductsList/>}></Route>
+      </Routes>
   </Router>
   );
 }

@@ -1,9 +1,7 @@
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { useDispatch, useSelector } from 'react-redux'
-import { AppDispatch } from '../Redux/Store'
-import { removeItemToCart } from '../Redux/Constants/Cart';
-import { addToCartAction, removeItemToCartAction } from '../Redux/Actions/Cart';
+import { removeItemToCart } from '../Constants/Cart';
+import { addToCartAction, removeItemToCartAction } from '../Actions/Cart';
 import { Link } from 'react-router-dom';
 import CartItems from '../components/CartItems';
 
@@ -16,14 +14,6 @@ interface CheckOutProps {
 
 export default function CheckOut({ open, setOpen }: CheckOutProps) {
 
-
-    const dispatch = useDispatch<AppDispatch>();
-
-    const cart = useSelector((state: any) => state.cartReducer);
-
-    const { cartItems } = cart;
-
-    const total = cartItems.reduce((total: number, item: any) => total + item.quantity * item.price, 0).toFixed(2)
 
     return (
         <Dialog open={open} onClose={() => setOpen(false)} className="relative z-10">
@@ -56,13 +46,13 @@ export default function CheckOut({ open, setOpen }: CheckOutProps) {
                                         </div>
                                     </div>
 
-                                    <CartItems cartItems={cartItems}></CartItems>
+                                    <CartItems></CartItems>
                                 </div>
 
                                 <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                                     <div className="flex justify-between text-base font-medium text-gray-900">
                                         <p>Subtotal</p>
-                                        <p>${total}</p>
+                                        <p>$1</p>
                                     </div>
                                     <p className="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
                                     <div className="mt-6">
