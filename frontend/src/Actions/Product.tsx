@@ -35,4 +35,28 @@ export const addProductAction = async (productData: FormData) => {
     }
 };
 
+export const productDeleteAction = async (id: string) => {
+    try {
+        const { data } = await axios.delete(`${baseUrl}/api/products/${id}`);
+        return { success: true, product: data };
+    } catch (error: any) {
+        return { success: false, message: error.response?.data?.message || "Failed to fetch product details" };
+    }
+};
+
+
+export const addToCart = (product: { _id: string; name: string; image: string; price: number }) => {
+    const cartKey = "cartItems";
+    const cart: any[] = JSON.parse(localStorage.getItem(cartKey) || "[]");
+
+    const existingIndex = cart.findIndex((item) => item._id === product._id);
+
+    if (existingIndex !== -1) {
+        cart[existingIndex].quantity += 1;
+    } else {
+        cart.push({ ...product, quantity: 1 });
+    }
+
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+};
 

@@ -3,8 +3,6 @@ import ProductDetail from "./views/ProductDetails";
 import Home from "./views/Home";
 import Login from "./views/Auth/Login";
 import Register from "./views/Auth/Register";
-import PlaceOrder from "./views/PlaceOrder";
-import { useSelector } from "react-redux";
 import Admin from "./views/Admin";
 import ProductsList from "./views/ProductsList";
 import { useState, useEffect } from "react";
@@ -43,9 +41,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home/>}></Route>
         <Route path="/products/:id" element={<ProductDetail/>}></Route>
-        <Route path="/login" element={<Login/>} ></Route>
-        <Route path="/register" element={<Register/>}></Route>
-        <Route path="/placeorder" element={<PlaceOrder/>}></Route>
+        <Route path="/login" element={userInfo ? <Navigate to="/" /> : <Login />} />
+        <Route path="/register" element={userInfo ? <Navigate to="/" /> : <Register />} />
         <Route path="/admin" element={<Admin/>}></Route>
         <Route path="/admin/products" element={<ProductsList/>}></Route>
       </Routes>

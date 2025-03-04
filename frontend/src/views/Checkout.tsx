@@ -1,9 +1,8 @@
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { removeItemToCart } from '../Constants/Cart';
-import { addToCartAction, removeItemToCartAction } from '../Actions/Cart';
 import { Link } from 'react-router-dom';
 import CartItems from '../components/CartItems';
+import { useState, useEffect } from 'react';
 
 
 
@@ -14,6 +13,12 @@ interface CheckOutProps {
 
 export default function CheckOut({ open, setOpen }: CheckOutProps) {
 
+    const [cartItems, setCartItems] = useState([]);
+
+    useEffect(() => {
+        const storedCart = JSON.parse(localStorage.getItem("cartItems") || "[]");
+        setCartItems(storedCart);
+    }, []);
 
     return (
         <Dialog open={open} onClose={() => setOpen(false)} className="relative z-10">
@@ -46,7 +51,7 @@ export default function CheckOut({ open, setOpen }: CheckOutProps) {
                                         </div>
                                     </div>
 
-                                    <CartItems></CartItems>
+                                    <CartItems cartItems={cartItems}></CartItems>
                                 </div>
 
                                 <div className="border-t border-gray-200 px-4 py-6 sm:px-6">

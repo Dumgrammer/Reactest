@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../Layout/AdminLayout";
 import AddProductModal from "../components/AddProduct";
-import { fetchProducts } from "../Actions/Product";
+import { fetchProducts, productDeleteAction } from "../Actions/Product";
 
 export default function ProductsList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,7 +27,7 @@ export default function ProductsList() {
 
     const handleOpenModal = () => setIsModalOpen(true);
     const handleCloseModal = () => setIsModalOpen(false);
-    
+
     const handleProductAdded = async () => {
         setIsModalOpen(false);
         setLoading(true);
@@ -41,6 +41,19 @@ export default function ProductsList() {
         }
     };
 
+    const handleProductDeletion = async (id: string) => {
+        await productDeleteAction(id);
+        setLoading(true);
+        const response = await fetchProducts();
+        setLoading(false);
+    
+        if (!response.success) {
+            setError(response.message);
+        } else {
+            setProducts(response.products.data);
+        }
+    };
+    
 
     return (
         <AdminLayout>
@@ -90,7 +103,7 @@ export default function ProductsList() {
                                             <a href="#" className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <a href="#" className="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</a>
+                                            <button onClick={ () => handleProductDeletion(product._id)} className="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</button>
                                         </td>
                                     </tr>
                                 ))
