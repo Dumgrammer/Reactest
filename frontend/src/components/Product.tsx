@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchProducts } from "../Actions/Product";
+import Carousel from "./Carousel";
+
 
 function Product() {
     const [products, setProducts] = useState([]);

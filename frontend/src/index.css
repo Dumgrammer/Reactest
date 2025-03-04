@@ -28,3 +28,14 @@
     min-height: 75dvh;
     align-items: center;
 }
+
+.carousel {
+    width: 100%;
+    height: 300px;
+}
+
+.slick-prev:before,
+.slick-next::before {
+    color: black !important;
+    background: white !important;
+}
