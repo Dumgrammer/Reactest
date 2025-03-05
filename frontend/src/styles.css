@@ -1,0 +1,56 @@
+.oauth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: 1px solid rgb(21 152 75);
+  background-color: #ffffff; /* Google blue color */
+  color: rgb(21 152 75);
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  margin: 10px auto;
+
+  img {
+    height: 24px;
+    width: auto;
+    margin-right: 10px;
+  }
+}
+
+.oauth-button:hover {
+  background-color: #ededed; /* Darker blue for hover */
+}
+
+
+.separator-text {
+  text-align: center;
+  position: relative;
+  margin: 20px 0; /* Space above and below the line */
+}
+
+.separator-text::before,
+.separator-text::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%; /* Adjust width as needed */
+  height: 1px; /* Height of the line */
+  background-color: #ccc; /* Color of the line */
+}
+
+.separator-text::before {
+  left: 0; /* Align to the left */
+}
+
+.separator-text::after {
+  right: 0; /* Align to the right */
+}
+
+.separator-text {
+  display: inline-block; /* Center the text */
+  padding: 0 10px; /* Space between text and line */
+  width: 100%;
+}
