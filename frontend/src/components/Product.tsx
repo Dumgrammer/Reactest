@@ -34,6 +34,7 @@ function Product() {
             ) : (
                 <section className="text-gray-600 body-font">
                     <div className="container px-5 py-24 mx-auto">
+                        <Carousel></Carousel>
                         <div className="flex flex-wrap -m-4">
                             {products.length > 0 ? (
                                 products.map((product: any) => (
