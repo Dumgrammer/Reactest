@@ -35,6 +35,8 @@ function Product() {
                 <section className="text-gray-600 body-font">
                     <div className="container mx-auto">
                         <Carousel></Carousel>
+                        <div className="w-full p-4">
+                        <h2 className="text-xl font-bold mb-4">Products</h2>
                         <div className="flex flex-wrap -m-4">
                             {products.length > 0 ? (
                                 products.map((product: any) => (
@@ -69,7 +71,7 @@ function Product() {
                             ) : (
                                 <h2>No products available.</h2>
                             )}
-                        </div>
+                        </div></div>
                     </div>
                 </section>
             )}
