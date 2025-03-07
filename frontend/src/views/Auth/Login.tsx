@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../../Layout/Layouts";
 import { userLogin } from "../../Actions/User";
+import '../../styles.css';
 
 export default function Login() {
     
@@ -57,6 +58,15 @@ export default function Login() {
                                         </div>
                                         <button type="submit" className="w-full p-btn font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600">
                                             Sign in
+                                        </button>
+                                        <div className="separator-text">or</div>
+                                        <button 
+                                            type="button" 
+                                            // onClick={handleGoogleSignIn} 
+                                            className="oauth-button"
+                                        >
+                                            <img src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" alt="Goggle Logo"/>
+                                            Continue with Google
                                         </button>
                                         <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                                             Don’t have an account yet?

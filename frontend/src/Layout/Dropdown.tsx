@@ -39,7 +39,7 @@ export default function Dropdown() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute mt-2 w-44 bg-white divide-y divide-gray-100 rounded-lg shadow-md dark:bg-gray-700">
+        <div className="absolute mt-2 w-44 bg-white divide-y divide-gray-100 rounded-lg shadow-md dark:bg-gray-700 z-10">
           {/* User Info */}
           <div className="px-4 py-3 text-sm text-gray-900 dark:text-white">
             <div>{userInfo?.data.name || "Guest"}</div>
