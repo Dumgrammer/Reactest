@@ -103,7 +103,7 @@ export default function ProductsList() {
         <AdminLayout>
             {/* Add Product */}
             <div className="flex justify-end">
-                <button type="button" onClick={handleOpenModal} className="text-gray-900 bg-white border border-gray-300 hover:bg-gray-100 focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mt-2 mb-2 dark:bg-gray-800 dark:text-white">
+                <button type="button" onClick={handleOpenModal} className="text-white bg-green-500 border  hover:bg-green-600 focus:ring-4 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mt-2 mb-2 dark:bg-gray-800 dark:text-white">
                     Add Product
                 </button>
 
@@ -122,8 +122,9 @@ export default function ProductsList() {
                 ) : error ? (
                     <h1 className="text-red-500">{error}</h1>
                 ) : (
+                    <div className="max-h-80 overflow-y-auto">
                     <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
                             <tr>
                                 <th className="px-6 py-3">Product name</th>
                                 <th className="px-6 py-3">Price</th>
@@ -158,19 +159,18 @@ export default function ProductsList() {
                             )}
                         </tbody>
                     </table>
+                    </div>
                 )}
-
-                {/* Edit Product Modal */}
-                {selectedProduct && (
-                    <EditProductModal
-                        isOpen={isEditOpen}
-                        onClose={handleCloseEditModal}
-                        onProductUpdated={handleProductUpdated}
-                        product={selectedProduct}
-                    />
-                )}
-
             </div>
+            {/* Edit Product Modal */}
+            {selectedProduct && (
+                <EditProductModal
+                    isOpen={isEditOpen}
+                    onClose={handleCloseEditModal}
+                    onProductUpdated={handleProductUpdated}
+                    product={selectedProduct}
+                />
+            )}
 
             {/* Delete Dialog */}
             <Dialog open={isDeleteOpen} onClose={handleCloseDeleteModal} className="relative z-50">
