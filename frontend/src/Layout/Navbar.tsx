@@ -17,12 +17,24 @@ function Navbar() {
       setUserInfo(storedUser);      
     };
 
-    const storedCart = JSON.parse(localStorage.getItem("cartItems") || "[]");
-    const count = storedCart.reduce((acc: any, item: any) => acc + (item.quantity || 0), 0);
-    setTotalItems(count);
+    const updateCartCount = () => {
+      const storedCart = JSON.parse(localStorage.getItem("cartItems") || "[]");
+      const count = storedCart.reduce((acc: any, item: any) => acc + (item.quantity || 0), 0);
+      setTotalItems(count);
+    };
 
+    // Initial cart count
+    updateCartCount();
+
+    // Listen for storage changes (from other tabs)
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    // Listen for cart updates from current tab
+    window.addEventListener("cartUpdated", updateCartCount);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("cartUpdated", updateCartCount);
+    };
   }, []);
 
   return (

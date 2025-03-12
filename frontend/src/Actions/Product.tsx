@@ -24,7 +24,12 @@ export const addProductAction = async (productData: FormData) => {
     try {
         const { data } = await axios.post(
             `${baseUrl}/api/products/createproduct`,
-            productData
+            productData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
         );
 
         console.log("Product Added:", data);
@@ -44,19 +49,49 @@ export const productDeleteAction = async (id: string) => {
     }
 };
 
+export const updateProductAction = async (id: string, productData: FormData) => {
+    try {
+        const { data } = await axios.patch(
+            `${baseUrl}/api/products/${id}`,
+            productData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+        );
 
-export const addToCart = (product: { _id: string; name: string; image: string; price: number }) => {
+        console.log("Product Updated:", data);
+        return { success: true, data };
+    } catch (error: any) {
+        console.error("Product Update Error:", error.response?.data || error.message);
+        return { success: false, message: error.response?.data?.message || "Failed to update product" };
+    }
+};
+
+export const addToCart = (product: { _id: string; name: string; image: string; price: number; size?: string; quantity?: number }) => {
     const cartKey = "cartItems";
     const cart: any[] = JSON.parse(localStorage.getItem(cartKey) || "[]");
 
-    const existingIndex = cart.findIndex((item) => item._id === product._id);
+    const existingIndex = cart.findIndex(item => 
+        item._id === product._id && 
+        (!product.size || item.size === product.size)
+    );
 
     if (existingIndex !== -1) {
-        cart[existingIndex].quantity += 1;
+        // If item exists, update quantity
+        cart[existingIndex].quantity += (product.quantity || 1);
     } else {
-        cart.push({ ...product, quantity: 1 });
+        // If item doesn't exist, add it with quantity
+        cart.push({ 
+            ...product, 
+            quantity: product.quantity || 1,
+            size: product.size || null
+        });
     }
 
     localStorage.setItem(cartKey, JSON.stringify(cart));
+    // Dispatch a custom event to notify components about cart updates
+    window.dispatchEvent(new Event('cartUpdated'));
 };
 

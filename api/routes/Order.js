@@ -4,11 +4,11 @@ const protect = require('../middleware/Auth');
 
 const orderController = require('../controllers/Order');
 
-router.get('/', protect, orderController.getAllOrders);
-router.get('/:id', protect, orderController.getSpecificOrders);
+router.get('/', orderController.getAllOrders);
+router.get('/:id', orderController.getSpecificOrders);
 
-router.post('/', protect, orderController.orderProduct);
+router.post('/', orderController.orderProduct);
 
-router.put('/:id/payment', protect, orderController.orderPayment);
+router.put('/:id/payment', orderController.orderPayment);
 
 module.exports = router;

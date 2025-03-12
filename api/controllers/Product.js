@@ -7,10 +7,13 @@ exports.getProduct = async (req, res) => {
         const products = await Product.find({});
 
         const updatedProducts = products.map(product => {
-            if (!product.image.startsWith("http")) {
-                product.image = `${req.protocol}://${req.get("host")}/${product.image.replace(/\\/g, "/")}`;
-            }
-            return product;
+            const updatedImages = product.image.map(img => {
+                if (!img.startsWith("http")) {
+                    return `${req.protocol}://${req.get("host")}/${img.replace(/\\/g, "/")}`;
+                }
+                return img;
+            });
+            return { ...product.toObject(), image: updatedImages };
         });
 
         return send.sendResponse(res, 200, updatedProducts, "Products found!");
@@ -29,32 +32,49 @@ exports.getSpecificProduct = async (req, res) => {
         }
 
         // Ensure local images are formatted correctly
-        if (!product.image.startsWith("http")) {
-            product.image = `${req.protocol}://${req.get("host")}/${product.image.replace(/\\/g, "/")}`;
-        }
+        const updatedImages = product.image.map(img => {
+            if (!img.startsWith("http")) {
+                return `${req.protocol}://${req.get("host")}/${img.replace(/\\/g, "/")}`;
+            }
+            return img;
+        });
 
-        return send.sendResponse(res, 200, product, "Product found!");
+        const updatedProduct = { ...product.toObject(), image: updatedImages };
+        return send.sendResponse(res, 200, updatedProduct, "Product found!");
     } catch (error) {
         return send.sendISEResponse(res, error);
     }
 };
 
-
 exports.createProduct = async (req, res) => {
     try {
+        const { name, description, category, size, type, rating, numReview, price, countInStock } = req.body;
 
-        const { name, description, rating, numReview, price, countInStock } = req.body;
-
-        if (!req.file) {
-            return res.status(400).json({ message: "Image upload failed!" });
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: "At least one image is required!" });
         }
 
-        console.log("File uploaded at:", req.file.path);
+        // Handle arrays for category and size
+        const categories = Array.isArray(req.body['category[]']) ? req.body['category[]'] : [req.body['category[]']];
+        const sizes = Array.isArray(req.body['size[]']) ? req.body['size[]'] : [req.body['size[]']];
+
+        if (!categories || categories.length === 0) {
+            return res.status(400).json({ message: "At least one category is required!" });
+        }
+
+        if (!sizes || sizes.length === 0) {
+            return res.status(400).json({ message: "At least one size is required!" });
+        }
+
+        console.log("Files uploaded at:", req.files.map(file => file.path));
 
         const product = new Product({
             name,
-            image: req.file.path,
+            image: req.files.map(file => file.path),
             description,
+            category: categories,
+            size: sizes,
+            type,
             rating,
             numReview,
             price,
@@ -62,7 +82,7 @@ exports.createProduct = async (req, res) => {
         });
 
         const newProduct = await product.save(); 
-        return send.sendResponse(res, 200, newProduct, "Product created succuesfully!");
+        return send.sendResponse(res, 200, newProduct, "Product created successfully!");
 
     } catch (error) {
         console.log(error)

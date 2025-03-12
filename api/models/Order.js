@@ -23,7 +23,7 @@ const orderSchema = new mongoose.Schema({
         country: { type: String, required: true },
     },
 
-    paymentMethod: { type: String, required: true,  default: 'Paypal' },
+    paymentMethod: { type: String, required: true,  default: 'gcash' },
 
     paymentResult: {
         id: { type: String },

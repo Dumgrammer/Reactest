@@ -46,7 +46,7 @@ function Product() {
                                                 <div className="mt-6 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
                                                     <div className="group relative">
                                                         <img
-                                                            src={product.image}
+                                                            src={Array.isArray(product.image) ? product.image[0] : product.image}
                                                             alt={product.name}
                                                             className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80"
                                                         />
