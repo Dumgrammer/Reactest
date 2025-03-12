@@ -87,7 +87,7 @@ export default function Admin() {
 
     return (
         <AdminLayout>
-            <div className="space-y-6">
+            <div className="px-6 py-4 space-y-6">
                 <h2 className="text-xl font-bold text-gray-800">Sales Distribution</h2>
                 <p className="text-sm text-gray-600">This is all over Platform Sales Generated</p>
                 
