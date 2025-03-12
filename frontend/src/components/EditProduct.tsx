@@ -66,18 +66,22 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
     formData.append("rating", rating);
     formData.append("numReview", numReview);
     
-    // Append arrays
+    // Correctly append arrays
     categories.forEach((category) => {
-      formData.append("category[]", category);
+      formData.append("category", category);
     });
     
     sizes.forEach((size) => {
-      formData.append("size[]", size);
+      formData.append("size", size);
     });
 
-    // Append existing images that weren't deleted
+    // Append existing images
     images.forEach((image) => {
-      formData.append("existingImages[]", image);
+      // Only append the image filename, not the full URL
+      const imageName = image.split('/').pop();
+      if (imageName) {
+        formData.append("existingImages", imageName);
+      }
     });
 
     // Append new images

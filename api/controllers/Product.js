@@ -48,15 +48,15 @@ exports.getSpecificProduct = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
     try {
-        const { name, description, category, size, type, rating, numReview, price, countInStock } = req.body;
+        const { name, description, type, rating, numReview, price, countInStock } = req.body;
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: "At least one image is required!" });
         }
 
         // Handle arrays for category and size
-        const categories = Array.isArray(req.body['category[]']) ? req.body['category[]'] : [req.body['category[]']];
-        const sizes = Array.isArray(req.body['size[]']) ? req.body['size[]'] : [req.body['size[]']];
+        const categories = Array.isArray(req.body.category) ? req.body.category : [req.body.category];
+        const sizes = Array.isArray(req.body.size) ? req.body.size : [req.body.size];
 
         if (!categories || categories.length === 0) {
             return res.status(400).json({ message: "At least one category is required!" });
@@ -66,8 +66,6 @@ exports.createProduct = async (req, res) => {
             return res.status(400).json({ message: "At least one size is required!" });
         }
 
-        console.log("Files uploaded at:", req.files.map(file => file.path));
-
         const product = new Product({
             name,
             image: req.files.map(file => file.path),
@@ -75,17 +73,26 @@ exports.createProduct = async (req, res) => {
             category: categories,
             size: sizes,
             type,
-            rating,
-            numReview,
+            rating: rating || 0,
+            numReview: numReview || 0,
             price,
             countInStock
         });
 
-        const newProduct = await product.save(); 
-        return send.sendResponse(res, 200, newProduct, "Product created successfully!");
+        const newProduct = await product.save();
+        
+        // Format the response to include full image URLs
+        const formattedProduct = {
+            ...newProduct.toObject(),
+            image: newProduct.image.map(img => 
+                `${req.protocol}://${req.get("host")}/${img.replace(/\\/g, "/")}`
+            )
+        };
+
+        return send.sendResponse(res, 201, formattedProduct, "Product created successfully!");
 
     } catch (error) {
-        console.log(error)
+        console.error("Product creation error:", error);
         return send.sendISEResponse(res, error);
     }
 };
@@ -93,18 +100,63 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         const id = req.params.id;
-
         const existingProduct = await Product.findById(id);
         
         if (!existingProduct) {
             return send.sendNotFoundResponse(res, "Product not found!");
         }
 
-        const updatedProduct = await Product.updateOne({_id: id}, {$set: req.body});
+        // Get the basic fields
+        const { name, description, type, rating, numReview, price, countInStock } = req.body;
+        
+        // Handle arrays for category and size
+        const categories = Array.isArray(req.body.category) ? req.body.category : [req.body.category];
+        const sizes = Array.isArray(req.body.size) ? req.body.size : [req.body.size];
 
-        return send.sendResponse(res, 203, updatedProduct, "Product has been updated successfully!");
+        // Handle existing images
+        let updatedImages = [];
+        if (req.body.existingImages) {
+            const existingImages = Array.isArray(req.body.existingImages) 
+                ? req.body.existingImages 
+                : [req.body.existingImages];
+            updatedImages = existingImages;
+        }
+
+        // Add new uploaded images if any
+        if (req.files && req.files.length > 0) {
+            const newImages = req.files.map(file => file.path);
+            updatedImages = [...updatedImages, ...newImages];
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(
+            id,
+            {
+                name,
+                description,
+                type,
+                rating,
+                numReview,
+                price,
+                countInStock,
+                category: categories,
+                size: sizes,
+                image: updatedImages.length > 0 ? updatedImages : existingProduct.image
+            },
+            { new: true }
+        );
+
+        // Format image URLs in the response
+        const formattedProduct = {
+            ...updatedProduct.toObject(),
+            image: updatedProduct.image.map(img => 
+                `${req.protocol}://${req.get("host")}/${img.replace(/\\/g, "/")}`
+            )
+        };
+
+        return send.sendResponse(res, 200, formattedProduct, "Product has been updated successfully!");
 
     } catch (error) {
+        console.error("Product update error:", error);
         return send.sendISEResponse(res, error);
     }
 }
