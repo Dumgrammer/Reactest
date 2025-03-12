@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogPanel, Description, DialogTitle } from '@headlessui/react'
 import { useState } from 'react'
 
-interface SuccessProps {
+interface FailedProps {
   isOpen: boolean;
   title: string;
   message: string;
@@ -16,7 +16,7 @@ export default function Success({
   message,
   buttonText,
   onConfirm,
-} : SuccessProps) {
+} : FailedProps) {
 
   return (
       <Dialog open={isOpen} as="div" className="relative z-10 focus:outline-none" onClose={() => {}}>

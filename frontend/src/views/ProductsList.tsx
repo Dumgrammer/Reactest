@@ -4,6 +4,7 @@ import AddProductModal from "../components/AddProduct";
 import EditProductModal from "../components/EditProduct";
 import { fetchProducts, productDeleteAction } from "../Actions/Product";
 import { Dialog, DialogPanel, DialogTitle, Description } from "@headlessui/react";
+import Success from "../components/modals/Success";
 
 export default function ProductsList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,6 +32,10 @@ export default function ProductsList() {
         getProducts();
     }, []);
 
+    const [isAddSuccessOpen, setIsAddSuccessOpen] = useState<boolean>(false);
+    const [isEditSuccessOpen, setIsEditSuccessOpen] = useState<boolean>(false);
+    const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState<boolean>(false);
+
     // Add Modal
     const handleOpenModal = () => setIsModalOpen(true);
     const handleCloseModal = () => setIsModalOpen(false);
@@ -43,8 +48,7 @@ export default function ProductsList() {
         setSelectedProduct(null);
         setIsEditOpen(false);
     };
-
-    // Open/Delete Delete Confirmation Modal
+    // Delete Confirmation Modal
     const handleOpenDeleteModal = (id: string) => {
         setDeleteProductId(id);
         setIsDeleteOpen(true);
@@ -64,6 +68,8 @@ export default function ProductsList() {
             setError(response.message);
         } else {
             setProducts(response.products.data);
+            // Sucess Modal
+            setIsAddSuccessOpen(true)
         }
     };
 
@@ -77,6 +83,8 @@ export default function ProductsList() {
             setError(response.message);
         } else {
             setProducts(response.products.data);
+            // Sucess Modal
+            setIsEditSuccessOpen(true)
         }
     };
 
@@ -100,6 +108,8 @@ export default function ProductsList() {
                 }
                 setIsDeleteOpen(false);
                 setDeleteProductId(null);
+                // Sucess Modal
+                setIsDeleteSuccessOpen(true);
             } catch (error: any) {
                 setError(error.message || "Failed to delete product");
                 setIsDeleteOpen(false);
@@ -247,6 +257,33 @@ export default function ProductsList() {
                         product={selectedProduct}
                     />
                 )}
+                
+                {/* Success Modal for Add Product */}
+                <Success
+                isOpen={isAddSuccessOpen} 
+                title="Add successful" 
+                message="Your product has been added successfully"
+                buttonText="Got it, thanks!"
+                onConfirm={() => setIsAddSuccessOpen(false)}
+                />
+                
+                {/* Success Modal for Edit Product */}
+                <Success
+                isOpen={isEditSuccessOpen} 
+                title="Edit successful" 
+                message="Your product has been updated successfully"
+                buttonText="Got it, thanks!"
+                onConfirm={() => setIsEditSuccessOpen(false)}
+                />
+
+                {/* Success Modal for Delete Product */}
+                <Success
+                isOpen={isDeleteSuccessOpen} 
+                title="Delete successful" 
+                message="Your product has been deleted successfully"
+                buttonText="Got it, thanks!"
+                onConfirm={() => setIsDeleteSuccessOpen(false)}
+                />
 
                 {/* Delete Dialog */}
                 <Dialog open={isDeleteOpen} onClose={handleCloseDeleteModal} className="relative z-50">
