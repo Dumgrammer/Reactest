@@ -80,7 +80,7 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
     formData.append("rating", rating);
     formData.append("numReview", numReview);
 
-    // Append existing images
+    // Append existing images that weren't removed
     images.forEach((image) => {
       const imageUrl = new URL(image);
       const imageName = imageUrl.pathname.split('/').pop();
@@ -89,7 +89,7 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
       }
     });
 
-    // Append new images
+    // Append new images if any
     newImages.forEach((image) => {
       formData.append("images", image);
     });
@@ -116,7 +116,9 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
   };
 
   const handleRemoveImage = (indexToRemove: number) => {
-    setImages(images.filter((_, index) => index !== indexToRemove));
+    // Create a new array without the removed image
+    const updatedImages = images.filter((_, index) => index !== indexToRemove);
+    setImages(updatedImages);
   };
 
   const handleAddType = () => {
@@ -241,10 +243,10 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
                   required
                 >
                   <option value="">Select a category</option>
-                  <option value="Food">Clothing</option>
-                  <option value="Beverages">Books</option>
-                  <option value="Snacks">Footwear</option>
-                  <option value="Desserts">Accessories</option>
+                  <option value="Clothing">Clothing</option>
+                  <option value="Books">Books</option>
+                  <option value="Footwear">Footwear</option>
+                  <option value="Accessories">Accessories</option>
                 </select>
               </div>
 

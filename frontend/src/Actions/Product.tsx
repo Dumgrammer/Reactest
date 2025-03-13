@@ -32,11 +32,15 @@ export const addProductAction = async (productData: FormData) => {
             }
         );
 
+        if (!data.success) {
+            throw new Error(data.message || "Failed to add product");
+        }
+
         console.log("Product Added:", data);
         return data;
     } catch (error: any) {
         console.error("Product Add Error:", error.response?.data || error.message);
-        throw error;
+        throw new Error(error.response?.data?.message || error.message || "Error adding product");
     }
 };
 

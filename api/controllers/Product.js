@@ -48,35 +48,39 @@ exports.getSpecificProduct = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
     try {
-        const { name, description, type, rating, numReview, price, countInStock } = req.body;
+        const { name, description, type, rating, numReview, price, countInStock, category } = req.body;
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ message: "At least one image is required!" });
         }
 
-        // Handle arrays for category and size
-        const categories = Array.isArray(req.body.category) ? req.body.category : [req.body.category];
+        // Handle arrays for type and size
+        const types = Array.isArray(type) ? type : [type];
         const sizes = Array.isArray(req.body.size) ? req.body.size : [req.body.size];
 
-        if (!categories || categories.length === 0) {
-            return res.status(400).json({ message: "At least one category is required!" });
+        if (!types || types.length === 0) {
+            return res.status(400).json({ message: "At least one type is required!" });
         }
 
         if (!sizes || sizes.length === 0) {
             return res.status(400).json({ message: "At least one size is required!" });
         }
 
+        if (!category) {
+            return res.status(400).json({ message: "Category is required!" });
+        }
+
         const product = new Product({
             name,
             image: req.files.map(file => file.path),
             description,
-            category: categories,
+            category,
             size: sizes,
-            type,
-            rating: rating || 0,
-            numReview: numReview || 0,
-            price,
-            countInStock
+            type: types,
+            rating: Number(rating) || 0,
+            numReview: Number(numReview) || 0,
+            price: Number(price) || 0,
+            countInStock: Number(countInStock) || 0
         });
 
         const newProduct = await product.save();
@@ -107,10 +111,10 @@ exports.updateProduct = async (req, res) => {
         }
 
         // Get the basic fields
-        const { name, description, type, rating, numReview, price, countInStock } = req.body;
+        const { name, description, type, rating, numReview, price, countInStock, category } = req.body;
         
-        // Handle arrays for category and size
-        const categories = Array.isArray(req.body.category) ? req.body.category : [req.body.category];
+        // Handle arrays for type and size
+        const types = Array.isArray(type) ? type : [type];
         const sizes = Array.isArray(req.body.size) ? req.body.size : [req.body.size];
 
         // Handle existing images
@@ -138,12 +142,12 @@ exports.updateProduct = async (req, res) => {
             {
                 name,
                 description,
-                type,
-                rating,
-                numReview,
-                price,
-                countInStock,
-                category: categories,
+                type: types,
+                rating: Number(rating),
+                numReview: Number(numReview),
+                price: Number(price),
+                countInStock: Number(countInStock),
+                category,
                 size: sizes,
                 image: updatedImages
             },

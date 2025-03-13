@@ -70,17 +70,20 @@ export default function ProductsList() {
     };
 
     const handleProductAdded = async () => {
-        setIsModalOpen(false);
+        setIsModalOpen(false);  // Close the add modal
         setLoading(true);
-        const response = await fetchProducts();
-        setLoading(false);
-
-        if (!response.success) {
-            setError(response.message);
-            setIsFailedOpen(true)
-        } else {
-            setProducts(response.products.data);
-            setIsAddSuccessOpen(true)
+        try {
+            const response = await fetchProducts();
+            if (response.success) {
+                setProducts(response.products.data);
+                setIsAddSuccessOpen(true);  // Show success modal after products are updated
+            } else {
+                setIsFailedOpen(true);
+            }
+        } catch (error: any) {
+            setIsFailedOpen(true);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -189,7 +192,6 @@ export default function ProductsList() {
                                                         </div>
                                                         <div className="ml-4">
                                                             <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                                                            <div className="text-sm text-gray-500">{product.type}</div>
                                                         </div>
                                                     </div>
                                                 </td>
