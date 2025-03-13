@@ -12,9 +12,9 @@ interface EditModalProps {
     price: number;
     countInStock: number;
     image: string[];
-    category: string[];
+    category: string;
+    type: string[];
     size: string[];
-    type: string;
     rating: number;
     numReview: number;
   };
@@ -25,12 +25,12 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
   const [productDescription, setProductDescription] = useState(product.description);
   const [productPrice, setProductPrice] = useState(product.price.toString());
   const [countInStock, setCountInStock] = useState(product.countInStock.toString());
-  const [productType, setProductType] = useState(product.type);
-  const [categories, setCategories] = useState<string[]>(product.category);
-  const [sizes, setSizes] = useState<string[]>(product.size);
-  const [newCategory, setNewCategory] = useState("");
+  const [category, setCategory] = useState(product.category);
+  const [types, setTypes] = useState<string[]>(Array.isArray(product.type) ? product.type : []);
+  const [newType, setNewType] = useState("");
+  const [sizes, setSizes] = useState<string[]>(Array.isArray(product.size) ? product.size : []);
   const [newSize, setNewSize] = useState("");
-  const [images, setImages] = useState<string[]>(product.image);
+  const [images, setImages] = useState<string[]>(Array.isArray(product.image) ? product.image : []);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [rating, setRating] = useState(product.rating.toString());
   const [numReview, setNumReview] = useState(product.numReview.toString());
@@ -42,10 +42,10 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
     setProductDescription(product.description);
     setProductPrice(product.price.toString());
     setCountInStock(product.countInStock.toString());
-    setProductType(product.type);
-    setCategories(product.category);
-    setSizes(product.size);
-    setImages(product.image);
+    setCategory(product.category);
+    setTypes(Array.isArray(product.type) ? product.type : []);
+    setSizes(Array.isArray(product.size) ? product.size : []);
+    setImages(Array.isArray(product.image) ? product.image : []);
     setRating(product.rating.toString());
     setNumReview(product.numReview.toString());
     setNewImages([]);
@@ -57,28 +57,33 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
     setLoading(true);
     setError("");
 
+    if (!category) {
+      setError("Please select a category");
+      setLoading(false);
+      return;
+    }
+
+    if (types.length === 0) {
+      setError("Please add at least one type");
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("name", productName);
     formData.append("description", productDescription);
     formData.append("price", productPrice);
     formData.append("countInStock", countInStock);
-    formData.append("type", productType);
+    formData.append("category", category);
+    types.forEach(type => formData.append("type", type));
+    sizes.forEach(size => formData.append("size", size));
     formData.append("rating", rating);
     formData.append("numReview", numReview);
-    
-    // Correctly append arrays
-    categories.forEach((category) => {
-      formData.append("category", category);
-    });
-    
-    sizes.forEach((size) => {
-      formData.append("size", size);
-    });
 
     // Append existing images
     images.forEach((image) => {
-      // Only append the image filename, not the full URL
-      const imageName = image.split('/').pop();
+      const imageUrl = new URL(image);
+      const imageName = imageUrl.pathname.split('/').pop();
       if (imageName) {
         formData.append("existingImages", imageName);
       }
@@ -114,20 +119,20 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
     setImages(images.filter((_, index) => index !== indexToRemove));
   };
 
-  const handleAddCategory = () => {
-    if (newCategory && !categories.includes(newCategory)) {
-      setCategories([...categories, newCategory]);
-      setNewCategory("");
+  const handleAddType = () => {
+    if (newType.trim() && !types.includes(newType.trim())) {
+      setTypes([...types, newType.trim()]);
+      setNewType("");
     }
   };
 
-  const handleRemoveCategory = (categoryToRemove: string) => {
-    setCategories(categories.filter(cat => cat !== categoryToRemove));
+  const handleRemoveType = (typeToRemove: string) => {
+    setTypes(types.filter(type => type !== typeToRemove));
   };
 
   const handleAddSize = () => {
-    if (newSize && !sizes.includes(newSize)) {
-      setSizes([...sizes, newSize]);
+    if (newSize.trim() && !sizes.includes(newSize.trim())) {
+      setSizes([...sizes, newSize.trim()]);
       setNewSize("");
     }
   };
@@ -228,14 +233,56 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Type</label>
-                <input
-                  type="text"
-                  value={productType}
-                  onChange={(e) => setProductType(e.target.value)}
+                <label className="block text-sm font-medium text-gray-700">Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
-                />
+                >
+                  <option value="">Select a category</option>
+                  <option value="Food">Clothing</option>
+                  <option value="Beverages">Books</option>
+                  <option value="Snacks">Footwear</option>
+                  <option value="Desserts">Accessories</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Types</label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {types.map((type, index) => (
+                    <span
+                      key={index}
+                      className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center"
+                    >
+                      {type}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveType(type)}
+                        className="ml-2 text-blue-600 hover:text-blue-800"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex mt-2">
+                  <input
+                    type="text"
+                    value={newType}
+                    onChange={(e) => setNewType(e.target.value)}
+                    className="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Add type"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddType}
+                    className="bg-blue-500 text-white px-4 rounded-r-md hover:bg-blue-600"
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -258,44 +305,6 @@ const EditProductModal: React.FC<EditModalProps> = ({ isOpen, onClose, onProduct
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     required
                   />
-                </div>
-              </div>
-
-              {/* Categories */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Categories</label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {categories.map((category, index) => (
-                    <span
-                      key={index}
-                      className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center"
-                    >
-                      {category}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCategory(category)}
-                        className="ml-2 text-blue-600 hover:text-blue-800"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <div className="flex mt-2">
-                  <input
-                    type="text"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Add category"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCategory}
-                    className="bg-blue-500 text-white px-4 rounded-r-md hover:bg-blue-600"
-                  >
-                    Add
-                  </button>
                 </div>
               </div>
 

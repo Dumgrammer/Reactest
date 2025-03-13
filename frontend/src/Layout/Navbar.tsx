@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Dropdown from "./Dropdown";
 import CheckOut from "../views/Checkout";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
@@ -10,17 +11,26 @@ function Navbar() {
   });
 
   const [totalItems, setTotalItems] = useState(0);
+  const navigate = useNavigate();
+
+  const updateCartCount = () => {
+    const storedCart = JSON.parse(localStorage.getItem("cartItems") || "[]");
+    const count = storedCart.reduce((acc: any, item: any) => acc + (item.quantity || 0), 0);
+    setTotalItems(count);
+  };
+
+  const handleCartClick = () => {
+    if (!userInfo) {
+      navigate('/login');
+      return;
+    }
+    setOpen(true);
+  };
 
   useEffect(() => {
     const handleStorageChange = () => {
       const storedUser = JSON.parse(localStorage.getItem("userInfo") || "null");
       setUserInfo(storedUser);      
-    };
-
-    const updateCartCount = () => {
-      const storedCart = JSON.parse(localStorage.getItem("cartItems") || "[]");
-      const count = storedCart.reduce((acc: any, item: any) => acc + (item.quantity || 0), 0);
-      setTotalItems(count);
     };
 
     // Initial cart count
@@ -65,7 +75,7 @@ function Navbar() {
             <>
               <Dropdown />
               <button
-                onClick={() => setOpen(true)}
+                onClick={handleCartClick}
                 className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
               >
                 <svg

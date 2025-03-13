@@ -45,7 +45,14 @@ export default function ProductsList() {
     const handleCloseModal = () => setIsModalOpen(false);
     // Edit Modal
     const handleOpenEditModal = (product: any) => {
-        setSelectedProduct(product); 
+        // Ensure the product data has the correct structure
+        const formattedProduct = {
+            ...product,
+            type: Array.isArray(product.type) ? product.type : [product.type].filter(Boolean),
+            size: Array.isArray(product.size) ? product.size : [product.size].filter(Boolean),
+            image: Array.isArray(product.image) ? product.image : [product.image].filter(Boolean)
+        };
+        setSelectedProduct(formattedProduct);
         setIsEditOpen(true);
     };
     const handleCloseEditModal = () => {

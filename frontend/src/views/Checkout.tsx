@@ -1,10 +1,8 @@
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import CartItems from '../components/CartItems';
 import { useState, useEffect } from 'react';
-
-
 
 interface CheckOutProps {
     open: boolean;
@@ -12,16 +10,38 @@ interface CheckOutProps {
 }
 
 export default function CheckOut({ open, setOpen }: CheckOutProps) {
-
+    const navigate = useNavigate();
     const [cartItems, setCartItems] = useState([]);
     const [total, setTotal] = useState(0);
 
     useEffect(() => {
+        // Check if user is logged in
+        const userInfo = localStorage.getItem("userInfo");
+        if (!userInfo) {
+            setOpen(false);
+            navigate('/login');
+            return;
+        }
+
+        updateCartAndTotal();
+        
+        // Listen for cart updates
+        const handleCartUpdate = () => {
+            updateCartAndTotal();
+        };
+        window.addEventListener('cartUpdated', handleCartUpdate);
+
+        return () => {
+            window.removeEventListener('cartUpdated', handleCartUpdate);
+        };
+    }, [navigate, setOpen]);
+
+    const updateCartAndTotal = () => {
         const storedCart = JSON.parse(localStorage.getItem("cartItems") || "[]");
         setCartItems(storedCart);
-        const total = storedCart.reduce((acc: any, item: any) => acc + (item.price  * item.quantity|| 0), 0);
-        setTotal(total);
-    }, []);
+        const newTotal = storedCart.reduce((acc: any, item: any) => acc + (item.price * item.quantity || 0), 0);
+        setTotal(newTotal);
+    };
 
     return (
         <Dialog open={open} onClose={() => setOpen(false)} className="relative z-10">

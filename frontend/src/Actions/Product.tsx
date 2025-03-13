@@ -62,7 +62,7 @@ export const updateProductAction = async (id: string, productData: FormData) => 
         );
 
         console.log("Product Updated:", data);
-        return { success: true, data };
+        return { success: true, product: data };
     } catch (error: any) {
         console.error("Product Update Error:", error.response?.data || error.message);
         return { success: false, message: error.response?.data?.message || "Failed to update product" };
@@ -70,6 +70,12 @@ export const updateProductAction = async (id: string, productData: FormData) => 
 };
 
 export const addToCart = (product: { _id: string; name: string; image: string; price: number; size?: string; quantity?: number }) => {
+    // Check if user is logged in
+    const userInfo = localStorage.getItem("userInfo");
+    if (!userInfo) {
+        throw new Error("Please login to add items to cart");
+    }
+
     const cartKey = "cartItems";
     const cart: any[] = JSON.parse(localStorage.getItem(cartKey) || "[]");
 

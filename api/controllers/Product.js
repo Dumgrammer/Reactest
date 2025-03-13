@@ -119,13 +119,18 @@ exports.updateProduct = async (req, res) => {
             const existingImages = Array.isArray(req.body.existingImages) 
                 ? req.body.existingImages 
                 : [req.body.existingImages];
-            updatedImages = existingImages;
+            updatedImages = existingImages.map(img => `uploads/${img}`);
         }
 
         // Add new uploaded images if any
         if (req.files && req.files.length > 0) {
             const newImages = req.files.map(file => file.path);
             updatedImages = [...updatedImages, ...newImages];
+        }
+
+        // If no images were provided, keep the existing ones
+        if (updatedImages.length === 0) {
+            updatedImages = existingProduct.image;
         }
 
         const updatedProduct = await Product.findByIdAndUpdate(
@@ -140,7 +145,7 @@ exports.updateProduct = async (req, res) => {
                 countInStock,
                 category: categories,
                 size: sizes,
-                image: updatedImages.length > 0 ? updatedImages : existingProduct.image
+                image: updatedImages
             },
             { new: true }
         );

@@ -12,17 +12,32 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
   const [productDescription, setProductDescription] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [countInStock, setCountInStock] = useState("");
-  const [categories, setCategories] = useState<string[]>([]);
+  const [category, setCategory] = useState("");
+  const [types, setTypes] = useState<string[]>([]);
+  const [newType, setNewType] = useState("");
   const [sizes, setSizes] = useState<string[]>([]);
-  const [newCategory, setNewCategory] = useState("");
   const [newSize, setNewSize] = useState("");
-  const [type, setType] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [rating] = useState("5");
   const [numReview] = useState("0");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const resetForm = () => {
+    setProductName("");
+    setProductDescription("");
+    setProductPrice("");
+    setCountInStock("");
+    setCategory("");
+    setTypes([]);
+    setNewType("");
+    setSizes([]);
+    setNewSize("");
+    setImages([]);
+    setImagePreviews([]);
+    setError("");
+  };
 
   // For Image Preview
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,23 +61,23 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
     setImagePreviews(prevPreviews => prevPreviews.filter((_, i) => i !== index));
   };
 
-  // Handle categories
-  const handleAddCategory = () => {
-    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
-      setCategories([...categories, newCategory.trim()]);
-      setNewCategory("");
+  // Handle types
+  const handleAddType = () => {
+    if (newType.trim() && !types.includes(newType.trim())) {
+      setTypes([...types, newType.trim()]);
+      setNewType("");
     }
   };
 
-  const handleCategoryKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleTypeKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleAddCategory();
+      handleAddType();
     }
   };
 
-  const removeCategory = (categoryToRemove: string) => {
-    setCategories(categories.filter(cat => cat !== categoryToRemove));
+  const removeType = (typeToRemove: string) => {
+    setTypes(types.filter(type => type !== typeToRemove));
   };
 
   // Handle sizes
@@ -89,8 +104,14 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
     setLoading(true);
     setError("");
 
-    if (categories.length === 0) {
-      setError("Please add at least one category");
+    if (!category) {
+      setError("Please select a category");
+      setLoading(false);
+      return;
+    }
+
+    if (types.length === 0) {
+      setError("Please add at least one type");
       setLoading(false);
       return;
     }
@@ -105,9 +126,9 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
     formData.append("name", productName);
     formData.append("description", productDescription);
     formData.append("price", productPrice);
-    categories.forEach(cat => formData.append("category[]", cat));
-    sizes.forEach(size => formData.append("size[]", size));
-    formData.append("type", type);
+    formData.append("category", category);
+    types.forEach(type => formData.append("type", type));
+    sizes.forEach(size => formData.append("size", size));
     formData.append("countInStock", countInStock);
     formData.append("rating", rating);
     formData.append("numReview", numReview);
@@ -118,6 +139,7 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
 
     try {
       await addProductAction(formData);
+      resetForm();
       onProductAdded();
       onClose();
     } catch (error: any) {
@@ -220,14 +242,57 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Type</label>
-                <input
-                  type="text"
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
+                <label className="block text-sm font-medium text-gray-700">Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   required
-                />
+                >
+                  <option value="">Select a category</option>
+                  <option value="Food">Clothing</option>
+                  <option value="Beverages">Books</option>
+                  <option value="Snacks">Footwear</option>
+                  <option value="Desserts">Accessories</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Types</label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {types.map((type, index) => (
+                    <span
+                      key={index}
+                      className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center"
+                    >
+                      {type}
+                      <button
+                        type="button"
+                        onClick={() => removeType(type)}
+                        className="ml-2 text-blue-600 hover:text-blue-800"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex mt-2">
+                  <input
+                    type="text"
+                    value={newType}
+                    onChange={(e) => setNewType(e.target.value)}
+                    onKeyPress={handleTypeKeyPress}
+                    className="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Add type"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddType}
+                    className="bg-blue-500 text-white px-4 rounded-r-md hover:bg-blue-600"
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -250,45 +315,6 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     required
                   />
-                </div>
-              </div>
-
-              {/* Categories */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Categories</label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {categories.map((category, index) => (
-                    <span
-                      key={index}
-                      className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center"
-                    >
-                      {category}
-                      <button
-                        type="button"
-                        onClick={() => removeCategory(category)}
-                        className="ml-2 text-blue-600 hover:text-blue-800"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <div className="flex mt-2">
-                  <input
-                    type="text"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    onKeyPress={handleCategoryKeyPress}
-                    className="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Add category"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCategory}
-                    className="bg-blue-500 text-white px-4 rounded-r-md hover:bg-blue-600"
-                  >
-                    Add
-                  </button>
                 </div>
               </div>
 

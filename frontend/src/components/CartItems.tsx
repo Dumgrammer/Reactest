@@ -38,12 +38,21 @@ export default function CartItems({ cartItems }: CartItemsProps) {
         updateCart(updatedCart);
     };
 
+    const handleQuantityChange = (index: number, newQuantity: number) => {
+        const updatedCart = [...cart];
+        updatedCart[index].quantity = newQuantity;
+        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+        
+        // Dispatch custom event to notify other components
+        window.dispatchEvent(new Event('cartUpdated'));
+    };
+
     return (
         <div className="mt-8">
             <div className="flow-root">
                 <ul role="list" className="-my-6 divide-y divide-gray-200">
                     {cart.length > 0 ? (
-                        cart.map((item) => (
+                        cart.map((item, index) => (
                             <li key={item._id} className="flex py-6">
                                 <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
                                     <img alt={item.name} src={item.image} className="size-full object-cover" />
@@ -59,15 +68,15 @@ export default function CartItems({ cartItems }: CartItemsProps) {
                                     <div className="flex flex-1 items-end justify-between text-sm">
                                         <div className="flex items-center space-x-2">
                                             <button
-                                                onClick={() => changeQuantity(item._id, -1)}
-                                                className="px-2 py-1 bg-gray-200 text-gray-700 rounded-md"
+                                                onClick={() => handleQuantityChange(index, Math.max(0, item.quantity - 1))}
+                                                className="text-gray-500 hover:text-gray-700"
                                             >
-                                                −
+                                                -
                                             </button>
-                                            <p className="text-gray-500">Qty: {item.quantity}</p>
+                                            <span className="text-gray-500">Qty {item.quantity}</span>
                                             <button
-                                                onClick={() => changeQuantity(item._id, 1)}
-                                                className="px-2 py-1 bg-gray-200 text-gray-700 rounded-md"
+                                                onClick={() => handleQuantityChange(index, item.quantity + 1)}
+                                                className="text-gray-500 hover:text-gray-700"
                                             >
                                                 +
                                             </button>
@@ -75,8 +84,12 @@ export default function CartItems({ cartItems }: CartItemsProps) {
 
                                         <button
                                             type="button"
-                                            onClick={() => removeFromCart(item._id)}
-                                            className="font-medium text-red-600 hover:text-red-500"
+                                            onClick={() => {
+                                                const updatedCart = cart.filter((_, i) => i !== index);
+                                                localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+                                                window.dispatchEvent(new Event('cartUpdated'));
+                                            }}
+                                            className="font-medium text-indigo-600 hover:text-indigo-500"
                                         >
                                             Remove
                                         </button>
