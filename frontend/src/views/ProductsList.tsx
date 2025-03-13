@@ -5,6 +5,7 @@ import EditProductModal from "../components/EditProduct";
 import { fetchProducts, productDeleteAction } from "../Actions/Product";
 import { Dialog, DialogPanel, DialogTitle, Description } from "@headlessui/react";
 import Success from "../components/modals/Success";
+import Failed from "../components/modals/Failed";
 
 export default function ProductsList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,9 +33,12 @@ export default function ProductsList() {
         getProducts();
     }, []);
 
+    // Success Modals
     const [isAddSuccessOpen, setIsAddSuccessOpen] = useState<boolean>(false);
     const [isEditSuccessOpen, setIsEditSuccessOpen] = useState<boolean>(false);
     const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState<boolean>(false);
+    // Failed Modal
+    const [isFailedOpen, setIsFailedOpen] = useState<boolean>(false);
 
     // Add Modal
     const handleOpenModal = () => setIsModalOpen(true);
@@ -66,9 +70,9 @@ export default function ProductsList() {
 
         if (!response.success) {
             setError(response.message);
+            setIsFailedOpen(true)
         } else {
             setProducts(response.products.data);
-            // Sucess Modal
             setIsAddSuccessOpen(true)
         }
     };
@@ -81,9 +85,9 @@ export default function ProductsList() {
 
         if (!response.success) {
             setError(response.message);
+            setIsFailedOpen(true)
         } else {
             setProducts(response.products.data);
-            // Sucess Modal
             setIsEditSuccessOpen(true)
         }
     };
@@ -108,11 +112,11 @@ export default function ProductsList() {
                 }
                 setIsDeleteOpen(false);
                 setDeleteProductId(null);
-                // Sucess Modal
                 setIsDeleteSuccessOpen(true);
             } catch (error: any) {
                 setError(error.message || "Failed to delete product");
                 setIsDeleteOpen(false);
+                setIsFailedOpen(true)
             }
         }
     };
@@ -242,13 +246,14 @@ export default function ProductsList() {
                     )}
                 </div>
 
-                {/* Modals */}
+                {/* Add Modal */}
                 <AddProductModal
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
                     onProductAdded={handleProductAdded}
-                />
+                    />
 
+                {/* Edit Modal */}
                 {selectedProduct && (
                     <EditProductModal
                         isOpen={isEditOpen}
@@ -257,33 +262,6 @@ export default function ProductsList() {
                         product={selectedProduct}
                     />
                 )}
-                
-                {/* Success Modal for Add Product */}
-                <Success
-                isOpen={isAddSuccessOpen} 
-                title="Add successful" 
-                message="Your product has been added successfully"
-                buttonText="Got it, thanks!"
-                onConfirm={() => setIsAddSuccessOpen(false)}
-                />
-                
-                {/* Success Modal for Edit Product */}
-                <Success
-                isOpen={isEditSuccessOpen} 
-                title="Edit successful" 
-                message="Your product has been updated successfully"
-                buttonText="Got it, thanks!"
-                onConfirm={() => setIsEditSuccessOpen(false)}
-                />
-
-                {/* Success Modal for Delete Product */}
-                <Success
-                isOpen={isDeleteSuccessOpen} 
-                title="Delete successful" 
-                message="Your product has been deleted successfully"
-                buttonText="Got it, thanks!"
-                onConfirm={() => setIsDeleteSuccessOpen(false)}
-                />
 
                 {/* Delete Dialog */}
                 <Dialog open={isDeleteOpen} onClose={handleCloseDeleteModal} className="relative z-50">
@@ -313,6 +291,58 @@ export default function ProductsList() {
                         </DialogPanel>
                     </div>
                 </Dialog>
+
+                {/* Success Modal for Add Product */}
+                <Success
+                isOpen={isAddSuccessOpen}
+                gif={
+                <>
+                <img className='mx-auto w-1/3 saturate-200' src="/success.gif"/>
+                </>
+                }
+                title="Add successful" 
+                message="Your product has been added successfully"
+                buttonText="Got it, thanks!"
+                onConfirm={() => setIsAddSuccessOpen(false)}
+                />
+                
+                {/* Success Modal for Edit Product */}
+                <Success
+                isOpen={isEditSuccessOpen} 
+                gif={
+                    <>
+                    <img className='mx-auto w-1/3 saturate-200' src="/success.gif"/>
+                    </>
+                    }
+                title="Edit successful" 
+                message="Your product has been updated successfully"
+                buttonText="Got it, thanks!"
+                onConfirm={() => setIsEditSuccessOpen(false)}
+                />
+
+                {/* Success Modal for Delete Product */}
+                <Success
+                isOpen={isDeleteSuccessOpen} 
+                gif={
+                    <>
+                    <img className='mx-auto w-1/3 saturate-200' src="/trash.gif"/>
+                    </>
+                    }
+                title="Delete successful" 
+                message="Your product has been deleted successfully"
+                buttonText="Got it, thanks!"
+                onConfirm={() => setIsDeleteSuccessOpen(false)}
+                />
+
+                {/* Failed Modal*/}
+                <Failed
+                isOpen={isFailedOpen} 
+                title="Oops!" 
+                message="There was an issue processing your request. Please try again"
+                buttonText="OK"
+                onConfirm={() => setIsFailedOpen(false)}
+                />
+
             </div>
         </AdminLayout>
     );

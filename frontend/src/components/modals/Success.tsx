@@ -1,17 +1,18 @@
 import { Button, Dialog, DialogPanel, Description, DialogTitle } from '@headlessui/react'
-import { useState } from 'react'
+import { ReactNode, useState } from 'react'
 
 interface SuccessProps {
   isOpen: boolean;
+  gif?: ReactNode;
   title: string;
   message: string;
   buttonText: string;
   onConfirm: () => void;
 }
 
-
 export default function Success({
   isOpen,
+  gif,
   title,
   message,
   buttonText,
@@ -24,7 +25,8 @@ export default function Success({
           <div className="flex min-h-full items-center justify-center p-4">
             <DialogPanel transition className="w-full max-w-md rounded-xl bg-white shadow-xl p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
             >
-              <img className='mx-auto w-1/3 saturate-200' src="/success.gif"/>
+              
+              {gif}
               <DialogTitle as="h2" className=" capitalize text-center text-4xl text-gray-900 font-[700]">
                 {title}
               </DialogTitle>

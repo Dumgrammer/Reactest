@@ -9,8 +9,7 @@ interface FailedProps {
   onConfirm: () => void;
 }
 
-
-export default function Success({
+export default function Failed({
   isOpen,
   title,
   message,
@@ -24,7 +23,7 @@ export default function Success({
           <div className="flex min-h-full items-center justify-center p-4">
             <DialogPanel transition className="w-full max-w-md rounded-xl bg-white shadow-xl p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
             >
-              <img className='mx-auto w-1/3 saturate-200' src="/success.gif"/>
+              <img className='mx-auto w-1/3 saturate-200' src="/fail.gif"/>
               <DialogTitle as="h2" className=" capitalize text-center text-4xl text-gray-900 font-[700]">
                 {title}
               </DialogTitle>
@@ -35,7 +34,7 @@ export default function Success({
               
               <div className="mt-8 flex justify-end">
                 <Button 
-                className="inline-flex items-center gap-2 bg-green-500 rounded-md hover:bg-green-600 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none"
+                className="inline-flex items-center gap-2 bg-red-500 rounded-md hover:bg-red-600 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none"
                 onClick={onConfirm}>
                   {buttonText}
                 </Button>
