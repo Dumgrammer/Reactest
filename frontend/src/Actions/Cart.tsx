@@ -10,24 +10,27 @@ import {
 } from "../Constants/Cart"
 
 
-export const addToCartAction = (id: any, quantity: number) => async  (dispatch: any, getState: any) => {
+export const addToCartAction = async (id: string, quantity: number = 1) => {
     try {
         const { data } = await axios.get(`${baseUrl}/api/products/${id}`);
-        dispatch({ type: addItemToCart, payload: {
+        const cartItem = {
             product: data.data._id,
             name: data.data.name,
             image: data.data.image,
             price: data.data.price,
             countInStock: data.data.countInStock,
             quantity: Number(quantity) || 1
-        } });
+        };
         
-        const cartItems = getState().cartReducer.cartItems;
-        localStorage.setItem("cartItems", JSON.stringify(cartItems));
-        console.log("This is", data)
-
+        // Get existing cart items
+        const existingCartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
+        existingCartItems.push(cartItem);
+        localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
+        
+        return { success: true };
     } catch (error) {
         console.error(error);
+        return { success: false, message: "Failed to add to cart" };
     }
 }
 
