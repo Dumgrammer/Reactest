@@ -70,17 +70,25 @@ export default function ProductsList() {
     };
 
     const handleProductAdded = async () => {
-        setIsModalOpen(false);  // Close the add modal
-        setLoading(true);
         try {
+            setLoading(true);
+            // Fetch the updated product list
             const response = await fetchProducts();
+            
             if (response.success) {
+                // Update the products state
                 setProducts(response.products.data);
-                setIsAddSuccessOpen(true);  // Show success modal after products are updated
+                // Close the add product modal
+                setIsModalOpen(false);
+                // Show the success modal
+                setIsAddSuccessOpen(true);
             } else {
+                setError(response.message);
                 setIsFailedOpen(true);
             }
         } catch (error: any) {
+            console.error("Error fetching products:", error);
+            setError(error.message || "Failed to fetch products");
             setIsFailedOpen(true);
         } finally {
             setLoading(false);

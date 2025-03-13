@@ -50,8 +50,9 @@ exports.createProduct = async (req, res) => {
     try {
         const { name, description, type, rating, numReview, price, countInStock, category } = req.body;
 
+        // Check for images
         if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ message: "At least one image is required!" });
+            return send.sendResponse(res, 400, null, "At least one image is required!");
         }
 
         // Handle arrays for type and size
@@ -59,20 +60,23 @@ exports.createProduct = async (req, res) => {
         const sizes = Array.isArray(req.body.size) ? req.body.size : [req.body.size];
 
         if (!types || types.length === 0) {
-            return res.status(400).json({ message: "At least one type is required!" });
+            return send.sendResponse(res, 400, null, "At least one type is required!");
         }
 
         if (!sizes || sizes.length === 0) {
-            return res.status(400).json({ message: "At least one size is required!" });
+            return send.sendResponse(res, 400, null, "At least one size is required!");
         }
 
         if (!category) {
-            return res.status(400).json({ message: "Category is required!" });
+            return send.sendResponse(res, 400, null, "Category is required!");
         }
+
+        // Process image paths
+        const imagePaths = req.files.map(file => file.path.replace(/\\/g, "/"));
 
         const product = new Product({
             name,
-            image: req.files.map(file => file.path),
+            image: imagePaths,
             description,
             category,
             size: sizes,
@@ -89,7 +93,7 @@ exports.createProduct = async (req, res) => {
         const formattedProduct = {
             ...newProduct.toObject(),
             image: newProduct.image.map(img => 
-                `${req.protocol}://${req.get("host")}/${img.replace(/\\/g, "/")}`
+                `${req.protocol}://${req.get("host")}/${img}`
             )
         };
 

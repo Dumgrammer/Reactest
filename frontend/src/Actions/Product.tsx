@@ -32,22 +32,18 @@ export const addProductAction = async (productData: FormData) => {
             }
         );
 
-        if (!data.success) {
-            throw new Error(data.message || "Failed to add product");
-        }
-
         console.log("Product Added:", data);
-        return data;
+        return { success: true, product: data };
     } catch (error: any) {
         console.error("Product Add Error:", error.response?.data || error.message);
         if (error.response?.data?.message) {
-            throw new Error(error.response.data.message);
+            return { success: false, message: error.response.data.message };
         } else if (error.response?.status === 413) {
-            throw new Error("File size too large. Maximum size is 5MB per image.");
+            return { success: false, message: "File size too large. Maximum size is 5MB per image." };
         } else if (error.response?.status === 415) {
-            throw new Error("Invalid file type. Only JPG, JPEG, PNG, and WEBP files are allowed.");
+            return { success: false, message: "Invalid file type. Only JPG, JPEG, PNG, and WEBP files are allowed." };
         }
-        throw new Error(error.message || "Error adding product. Please try again.");
+        return { success: false, message: error.message || "Error adding product. Please try again." };
     }
 };
 

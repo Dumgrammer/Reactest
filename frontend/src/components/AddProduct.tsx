@@ -103,53 +103,54 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
+    setError("");
 
     // Validate required fields
     if (!productName.trim()) {
-        onClose();
-        onProductAdded();
+        setError("Product name is required");
+        setLoading(false);
         return;
     }
 
     if (!productDescription.trim()) {
-        onClose();
-        onProductAdded();
+        setError("Product description is required");
+        setLoading(false);
         return;
     }
 
     if (!category) {
-        onClose();
-        onProductAdded();
+        setError("Category is required");
+        setLoading(false);
         return;
     }
 
     if (types.length === 0) {
-        onClose();
-        onProductAdded();
+        setError("At least one type is required");
+        setLoading(false);
         return;
     }
 
     if (sizes.length === 0) {
-        onClose();
-        onProductAdded();
+        setError("At least one size is required");
+        setLoading(false);
         return;
     }
 
     if (!productPrice || Number(productPrice) <= 0) {
-        onClose();
-        onProductAdded();
+        setError("Valid price is required");
+        setLoading(false);
         return;
     }
 
     if (!countInStock || Number(countInStock) < 0) {
-        onClose();
-        onProductAdded();
+        setError("Valid stock quantity is required");
+        setLoading(false);
         return;
     }
 
     if (images.length === 0) {
-        onClose();
-        onProductAdded();
+        setError("At least one image is required");
+        setLoading(false);
         return;
     }
 
@@ -164,24 +165,33 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
     formData.append("rating", rating);
     formData.append("numReview", numReview);
     
+    // Append each image with the correct field name 'images'
     images.forEach((image) => {
         formData.append("images", image);
     });
 
     try {
         const response = await addProductAction(formData);
+        
         if (response.success) {
+            // First reset the form so the user sees it reset
             resetForm();
-            onProductAdded();
-            onClose();
+            // Then call onProductAdded to refresh the product list
+            try {
+                await onProductAdded();
+                // The modal will be closed by ProductsList component
+            } catch (error) {
+                console.error("Error in onProductAdded:", error);
+                setError("Product added successfully but couldn't refresh the list. Please reload the page.");
+                setLoading(false);
+            }
         } else {
-            onClose();
-            onProductAdded();
+            setError(response.message || "Failed to add product");
+            setLoading(false);
         }
     } catch (error: any) {
-        onClose();
-        onProductAdded();
-    } finally {
+        console.error("Error adding product:", error);
+        setError(error.message || "Failed to add product");
         setLoading(false);
     }
   };
@@ -414,7 +424,7 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
             </div>
           </form>
         </div>
-      </div>
+      </div>  
     </>
   );
 };
