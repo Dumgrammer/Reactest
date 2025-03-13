@@ -43,6 +43,12 @@ export default function CheckOut({ open, setOpen }: CheckOutProps) {
         setTotal(newTotal);
     };
 
+    const handleRemoveItem = (itemId: string) => {
+        const updatedCart = cartItems.filter((item: any) => item._id !== itemId);
+        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+        window.dispatchEvent(new Event('cartUpdated'));
+    };
+
     return (
         <Dialog open={open} onClose={() => setOpen(false)} className="relative z-10">
             <DialogBackdrop
@@ -74,7 +80,7 @@ export default function CheckOut({ open, setOpen }: CheckOutProps) {
                                         </div>
                                     </div>
 
-                                    <CartItems cartItems={cartItems}></CartItems>
+                                    <CartItems cartItems={cartItems} onRemoveItem={handleRemoveItem}></CartItems>
                                 </div>
 
                                 <div className="border-t border-gray-200 px-4 py-6 sm:px-6">

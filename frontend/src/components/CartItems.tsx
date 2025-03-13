@@ -10,9 +10,10 @@ interface CartItem {
 
 interface CartItemsProps {
     cartItems: CartItem[];
+    onRemoveItem: (itemId: string) => void;
 }
 
-export default function CartItems({ cartItems }: CartItemsProps) {
+const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
     const [cart, setCart] = useState<CartItem[]>(cartItems);
 
     useEffect(() => {
@@ -104,4 +105,6 @@ export default function CartItems({ cartItems }: CartItemsProps) {
             </div>
         </div>
     );
-}
+};
+
+export default CartItems;

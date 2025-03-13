@@ -25,6 +25,7 @@ function ProductDetail() {
     const [error, setError] = useState("");
     const [selectedSize, setSelectedSize] = useState("");
     const [selectedType, setSelectedType] = useState("");
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     useEffect(() => {
         if (!id) return;
@@ -53,6 +54,23 @@ function ProductDetail() {
 
         fetchProduct();
     }, [id]);
+
+    // Add auto-slide effect
+    useEffect(() => {
+        if (!prod || prod.image.length <= 1) return;
+
+        const timer = setInterval(() => {
+            setCurrentImageIndex((prevIndex) => 
+                prevIndex === prod.image.length - 1 ? 0 : prevIndex + 1
+            );
+        }, 5000);
+
+        return () => clearInterval(timer);
+    }, [prod]);
+
+    const handleImageChange = (index: number) => {
+        setCurrentImageIndex(index);
+    };
 
     const handleAddToCart = () => {
         const userInfo = localStorage.getItem("userInfo");
@@ -84,20 +102,38 @@ function ProductDetail() {
                     <div className="lg:w-4/5 mx-auto flex flex-wrap">
                         {/* Image Section - Now on the left */}
                         <div className="lg:w-1/2 w-full lg:h-auto h-64 lg:object-cover object-center rounded mb-6 lg:mb-0">
-                            <img alt={prod.name} className="w-full h-full object-cover rounded-lg " src={prod.image[0]} />
+                            <div className="relative">
+                                <img 
+                                    alt={prod.name} 
+                                    className="w-full h-full object-cover rounded-lg transition-opacity duration-300" 
+                                    src={prod.image[currentImageIndex]} 
+                                />
+                                {prod.image.length > 1 && (
+                                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                                        {prod.image.map((_, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => handleImageChange(index)}
+                                                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                                                    currentImageIndex === index ? 'bg-white w-4' : 'bg-white/50'
+                                                }`}
+                                                aria-label={`Go to image ${index + 1}`}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Image Gallery */}
                             {prod.image.length > 1 && (
                                 <div className="mt-4 grid grid-cols-4 gap-2">
                                     {prod.image.map((img, index) => (
                                         <button
                                             key={index}
-                                            onClick={() => {
-                                                const mainImage = document.querySelector('.main-product-image') as HTMLImageElement;
-                                                if (mainImage) {
-                                                    mainImage.src = img;
-                                                }
-                                            }}
-                                            className="relative aspect-square rounded-md overflow-hidden hover:opacity-75 transition-opacity"
+                                            onClick={() => handleImageChange(index)}
+                                            className={`relative aspect-square rounded-md overflow-hidden transition-all duration-300 ${
+                                                currentImageIndex === index ? 'ring-2 ring-green-500' : 'hover:opacity-75'
+                                            }`}
                                         >
                                             <img
                                                 src={img}
