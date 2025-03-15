@@ -2,6 +2,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../Layout/Layouts";
 import { useEffect, useState } from "react";
 import { productDetailAction, addToCart } from "../Actions/Product";
+import Success from "../components/modals/Success";
+import Failed from "../components/modals/Failed";
 
 type Product = {
     _id: string;
@@ -26,6 +28,11 @@ function ProductDetail() {
     const [selectedSize, setSelectedSize] = useState("");
     const [selectedType, setSelectedType] = useState("");
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    // Success Modal
+    const [isSuccessOpen, setIsSuccessOpen] = useState<boolean>(false);
+    // Failed Modal
+    const [isFailedOpen, setIsFailedOpen] = useState<boolean>(false);
 
     useEffect(() => {
         if (!id) return;
@@ -79,7 +86,10 @@ function ProductDetail() {
             return;
         }
 
-        if (!prod) return;
+        if (!prod) {
+            setIsFailedOpen(true);  
+            return;
+        } 
         
         addToCart({
             _id: prod._id,
@@ -89,6 +99,8 @@ function ProductDetail() {
             size: selectedSize,
             quantity: 1
         });
+
+        setIsSuccessOpen(true);
     };
     
     if (!id) return <Layout><h1>Product ID is missing</h1></Layout>;
@@ -253,6 +265,29 @@ function ProductDetail() {
                     </div>
                 </div>
             </section>
+
+            {/* Success Modal for Add Product */}
+            <Success
+                isOpen={isSuccessOpen}
+                gif={
+                <>
+                <img className='mx-auto w-1/3 saturate-200' src="/success.gif"/>
+                </>
+                }
+                title="Item Added to Cart" 
+                message="Product has been added to your cart"
+                buttonText="Got it, thanks!"
+                onConfirm={() => setIsSuccessOpen(false)}
+            />
+
+                {/* Failed Modal*/}
+                <Failed
+                isOpen={isFailedOpen} 
+                title="Oops!" 
+                message="There was an issue processing your request. Please try again"
+                buttonText="OK"
+                onConfirm={() => setIsFailedOpen(false)}
+                />
         </Layout>
     ) : null;
 }

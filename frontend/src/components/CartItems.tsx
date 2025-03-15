@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import Success from "./modals/Success";
+import Failed from "./modals/Failed";
 
 interface CartItem {
     _id: string;
@@ -15,6 +17,10 @@ interface CartItemsProps {
 
 const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
     const [cart, setCart] = useState<CartItem[]>(cartItems);
+    // Success Modal
+    const [isSuccessOpen, setIsSuccessOpen] = useState<boolean>(false);
+    // Failed Modal
+    const [isFailedOpen, setIsFailedOpen] = useState<boolean>(false);
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem("cartItems") || "[]");
@@ -89,6 +95,7 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
                                                 const updatedCart = cart.filter((_, i) => i !== index);
                                                 localStorage.setItem("cartItems", JSON.stringify(updatedCart));
                                                 window.dispatchEvent(new Event('cartUpdated'));
+                                                setIsSuccessOpen(true);
                                             }}
                                             className="font-medium text-indigo-600 hover:text-indigo-500"
                                         >
@@ -103,6 +110,31 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
                     )}
                 </ul>
             </div>
+
+
+            {/* Success Modal for Add to Cart */}
+            <Success
+                isOpen={isSuccessOpen}
+                gif={
+                <>
+                <img className='mx-auto w-1/3 saturate-200' src="/success.gif"/>
+                </>
+                }
+                title="Item Removed" 
+                message="Product has been removed from your cart"
+                buttonText="Got it, thanks!"
+                onConfirm={() => setIsSuccessOpen(false)}
+            />
+
+            {/* Failed Modal*/}
+            {/* not yet used */}
+            <Failed
+                isOpen={isFailedOpen} 
+                title="Oops!" 
+                message="There was an issue processing your request. Please try again"
+                buttonText="OK"
+                onConfirm={() => setIsFailedOpen(false)}
+            />
         </div>
     );
 };
