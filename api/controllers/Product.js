@@ -22,6 +22,42 @@ exports.getProduct = async (req, res) => {
     }
 };
 
+exports.searchProduct = async (req, res) => {
+    try {
+        const { name, category } = req.query;
+        
+        // Build search query
+        let searchQuery = {};
+        
+        // Search by name (case insensitive)
+        if (name) {
+            searchQuery.name = { $regex: name, $options: 'i' };
+        }
+        
+        // Filter by category if provided
+        if (category) {
+            searchQuery.category = category;
+        }
+        
+        // Execute search
+        const products = await Product.find(searchQuery);
+
+        const updatedProducts = products.map(product => {
+            const updatedImages = product.image.map(img => {
+                if (!img.startsWith("http")) {
+                    return `${req.protocol}://${req.get("host")}/${img.replace(/\\/g, "/")}`;
+                }
+                return img;
+            });
+            return { ...product.toObject(), image: updatedImages };
+        });
+
+        return send.sendResponse(res, 200, updatedProducts, "Products found!");
+    } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};
+
 exports.getSpecificProduct = async (req, res) => {
     try {
         const id = req.params.id;

@@ -56,6 +56,23 @@ export const productDeleteAction = async (id: string) => {
     }
 };
 
+export const searchProducts = async (query: string, category?: string) => {
+    try {
+        const params: any = {};
+        if (query) params.name = query;
+        if (category) params.category = category;
+        
+        const { data } = await axios.get(`${baseUrl}/api/products/search`, { params });
+        return { success: true, products: data };
+    } catch (error: any) {
+        return { 
+            success: false, 
+            message: error.response?.data?.message || "Failed to search products",
+            products: { data: [] } 
+        };
+    }
+};
+
 export const updateProductAction = async (id: string, productData: FormData) => {
     try {
         const { data } = await axios.patch(
@@ -106,5 +123,100 @@ export const addToCart = (product: { _id: string; name: string; image: string; p
     localStorage.setItem(cartKey, JSON.stringify(cart));
     // Dispatch a custom event to notify components about cart updates
     window.dispatchEvent(new Event('cartUpdated'));
+};
+
+// Get all unique categories from products
+export const getCategories = async () => {
+    try {
+        const response = await fetchProducts();
+        if (!response.success) {
+            return { success: false, categories: [] };
+        }
+        
+        // Extract unique categories from products
+        const products = response.products.data || [];
+        const categories = Array.from(new Set(products.map((product: any) => product.category)));
+        
+        return { 
+            success: true, 
+            categories 
+        };
+    } catch (error: any) {
+        return { 
+            success: false, 
+            message: error.message || "Failed to fetch categories",
+            categories: [] 
+        };
+    }
+};
+
+// Get all unique types from products
+export const getTypes = async () => {
+    try {
+        const response = await fetchProducts();
+        if (!response.success) {
+            return { success: false, types: [] };
+        }
+        
+        // Extract unique types from products (flattening the arrays)
+        const products = response.products.data || [];
+        const allTypes: string[] = [];
+        
+        products.forEach((product: any) => {
+            if (Array.isArray(product.type)) {
+                product.type.forEach((type: string) => {
+                    if (type && !allTypes.includes(type)) {
+                        allTypes.push(type);
+                    }
+                });
+            }
+        });
+        
+        return { 
+            success: true, 
+            types: allTypes 
+        };
+    } catch (error: any) {
+        return { 
+            success: false, 
+            message: error.message || "Failed to fetch types",
+            types: [] 
+        };
+    }
+};
+
+// Get all unique sizes from products
+export const getSizes = async () => {
+    try {
+        const response = await fetchProducts();
+        if (!response.success) {
+            return { success: false, sizes: [] };
+        }
+        
+        // Extract unique sizes from products (flattening the arrays)
+        const products = response.products.data || [];
+        const allSizes: string[] = [];
+        
+        products.forEach((product: any) => {
+            if (Array.isArray(product.size)) {
+                product.size.forEach((size: string) => {
+                    if (size && !allSizes.includes(size)) {
+                        allSizes.push(size);
+                    }
+                });
+            }
+        });
+        
+        return { 
+            success: true, 
+            sizes: allSizes 
+        };
+    } catch (error: any) {
+        return { 
+            success: false, 
+            message: error.message || "Failed to fetch sizes",
+            sizes: [] 
+        };
+    }
 };
 

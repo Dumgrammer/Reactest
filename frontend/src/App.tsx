@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import Payment from "./views/Payment";
 import PaymentSuccess from './views/PaymentSuccess';
 import OrdersList from "./views/OrdersList";
+import Searched from "./views/Searched";
 interface UserInfo {
   id: string;
   name: string;
@@ -47,6 +48,7 @@ function App() {
         
         <Route path="/" element={<Home/>}></Route>
         <Route path="/products/:id" element={<ProductDetail/>}></Route>
+        <Route path="/search" element={<Searched/>}></Route>
         <Route path="/payment" element={<Payment/>}></Route>
         <Route path="/payment/success" element={<PaymentSuccess />} />
         
