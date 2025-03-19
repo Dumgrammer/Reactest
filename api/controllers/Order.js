@@ -34,7 +34,7 @@ exports.orderProduct = async (req, res) => {
             paymentMethod,
             totalPrice,
             user,
-            isPaid: paymentMethod === 'pickup'
+            isPaid: paymentMethod === 'gcash'
         });
 
         const createdOrder = await order.save();

@@ -6,6 +6,8 @@ const userController = require('../controllers/User');
 
 router.post('/login', userController.userLogin);
 router.post('/register', userController.userRegister);
+router.post('/verify-email', userController.verifyEmail);
+router.post('/resend-verification', userController.resendVerificationCode);
 
 router.get('/profile', protect, userController.getUserProfile);
 

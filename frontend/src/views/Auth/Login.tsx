@@ -51,13 +51,31 @@ export default function Login() {
             const response = await userLogin(formData.email, formData.password);
 
             if (!response.success) {
+                // If user is not verified, redirect to verification page
+                if (response.message === "Please verify your email first!") {
+                    navigate("/verify-code", { 
+                        state: { 
+                            email: formData.email,
+                            message: "Please verify your email to continue"
+                        } 
+                    });
+                    return;
+                }
                 setError(response.message || "Login failed");
                 return;
             }
 
+            // Check if user is admin and redirect accordingly
+            if (response.data && 'isAdmin' in response.data) {
+                if (response.data.isAdmin) {
+                    navigate("/admin");
+                } else {
+                    navigate("/");
+                }
+            }
+
             // Trigger storage event for other components
             window.dispatchEvent(new Event('storage'));
-            navigate("/");
         } catch (err) {
             setError("An unexpected error occurred. Please try again.");
             console.error("Login error:", err);

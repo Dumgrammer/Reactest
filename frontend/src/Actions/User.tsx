@@ -11,9 +11,17 @@ export interface UserInfo {
     createdAt: string;
 }
 
+export interface RegistrationResponse {
+    message: string;
+    data?: {
+        email: string;
+        verificationRequired: boolean;
+    };
+}
+
 export interface AuthResponse {
     success: boolean;
-    data?: UserInfo;
+    data?: UserInfo | { email: string; verificationRequired: boolean };
     message?: string;
 }
 
@@ -24,6 +32,11 @@ export interface RegistrationData {
     email: string;
     password: string;
     confirmationpass: string;
+}
+
+export interface VerificationResponse {
+    success: boolean;
+    message?: string;
 }
 
 // Helper function to set auth token
@@ -80,23 +93,61 @@ export const userRegistration = async (registrationData: RegistrationData): Prom
             },
         };
 
-        const { data } = await axios.post<UserInfo>(
+        const { data } = await axios.post<RegistrationResponse>(
             `${baseUrl}/api/users/register`,
             registrationData,
             config
         );
 
-        // Store user info in localStorage
-        localStorage.setItem("userInfo", JSON.stringify(data));
-        
-        // Set auth token for subsequent requests
-        setAuthToken(data.token);
+        // Only proceed if registration was successful
+        if (data.message) {
+            return { 
+                success: true, 
+                message: data.message,
+                data: {
+                    email: registrationData.email,
+                    verificationRequired: true
+                }
+            };
+        }
 
-        return { success: true, data };
+        return { 
+            success: false, 
+            message: "Registration failed. Please try again." 
+        };
     } catch (error: any) {
         return {
             success: false,
-            message: error.response?.data?.message || "Registration failed"
+            message: error.response?.data?.message || "Registration failed. Please try again."
+        };
+    }
+};
+
+export const verifyEmail = async (email: string, verificationCode: string): Promise<VerificationResponse> => {
+    try {
+        const { data } = await axios.post(`${baseUrl}/api/users/verify-email`, {
+            email,
+            verificationCode
+        });
+        return { success: true, message: data.message };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || "Verification failed"
+        };
+    }
+};
+
+export const resendVerificationCode = async (email: string): Promise<VerificationResponse> => {
+    try {
+        const { data } = await axios.post(`${baseUrl}/api/users/resend-verification`, {
+            email
+        });
+        return { success: true, message: data.message };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || "Failed to resend verification code"
         };
     }
 };

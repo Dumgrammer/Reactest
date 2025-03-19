@@ -50,11 +50,21 @@ export default function Register() {
                 setError(response.message || "Registration failed");
                 return;
             }
-            // Trigger storage event for other components
-            window.dispatchEvent(new Event('storage'));
-            navigate("/");
+
+            // Check if verification is required
+            if (response.data && 'verificationRequired' in response.data) {
+                // Navigate to verification page with email
+                navigate("/verify-code", { 
+                    state: { 
+                        email: formData.email,
+                        message: response.message 
+                    } 
+                });
+            } else {
+                setError("Registration completed but verification status is unknown");
+            }
         } catch (err) {
-            setError("Failed to register user.");
+            setError("Failed to register user. Please try again.");
         } finally {
             setLoading(false);
         }

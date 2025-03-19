@@ -11,14 +11,30 @@ import PaymentSuccess from './views/PaymentSuccess';
 import OrdersList from "./views/OrdersList";
 import Searched from "./views/Searched";
 import VerifyCode from "./views/VerifyCode";
+
 interface UserInfo {
   id: string;
   name: string;
   email: string;
+  isAdmin: boolean;
 }
 
-function App() {
+// Admin Route Protection Component
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const userInfo = localStorage.getItem("userInfo");
+  if (!userInfo) {
+    return <Navigate to="/login" />;
+  }
 
+  const user = JSON.parse(userInfo) as UserInfo;
+  if (!user.isAdmin) {
+    return <Navigate to="/" />;
+  }
+
+  return <>{children}</>;
+};
+
+function App() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(() => {
     try {
       const storedUser = localStorage.getItem("userInfo");
@@ -39,26 +55,26 @@ function App() {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-
   return (
     <Router>
       <Routes>
-        
         <Route path="/login" element={userInfo ? <Navigate to="/" /> : <Login />} />
         <Route path="/register" element={userInfo ? <Navigate to="/" /> : <Register />} />
+        <Route path="/verify-code" element={<VerifyCode/>} />
         
         <Route path="/" element={<Home/>}></Route>
         <Route path="/products/:id" element={<ProductDetail/>}></Route>
         <Route path="/search" element={<Searched/>}></Route>
         <Route path="/payment" element={<Payment/>}></Route>
         <Route path="/payment/success" element={<PaymentSuccess />} />
-        <Route path="/verifycode" element={<VerifyCode/>} />
         
-        <Route path="/admin" element={<Admin/>}></Route>
-        <Route path="/admin/products" element={<ProductsList/>}></Route>
-        <Route path="/admin/orders" element={<OrdersList/>}></Route>
+        {/* Protected Admin Routes */}
+        <Route path="/admin" element={<AdminRoute><Admin/></AdminRoute>}></Route>
+        <Route path="/admin/products" element={<AdminRoute><ProductsList/></AdminRoute>}></Route>
+        <Route path="/admin/orders" element={<AdminRoute><OrdersList/></AdminRoute>}></Route>
+        
       </Routes>
-  </Router>
+    </Router>
   );
 }
 
