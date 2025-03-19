@@ -10,6 +10,7 @@ import Payment from "./views/Payment";
 import PaymentSuccess from './views/PaymentSuccess';
 import OrdersList from "./views/OrdersList";
 import Searched from "./views/Searched";
+import VerifyCode from "./views/VerifyCode";
 interface UserInfo {
   id: string;
   name: string;
@@ -51,6 +52,7 @@ function App() {
         <Route path="/search" element={<Searched/>}></Route>
         <Route path="/payment" element={<Payment/>}></Route>
         <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/verifycode" element={<VerifyCode/>} />
         
         <Route path="/admin" element={<Admin/>}></Route>
         <Route path="/admin/products" element={<ProductsList/>}></Route>
