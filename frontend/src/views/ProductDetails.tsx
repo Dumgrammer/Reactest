@@ -113,7 +113,7 @@ function ProductDetail() {
                 <div className="container px-5 py-24 mx-auto">
                     <div className="lg:w-4/5 mx-auto flex flex-wrap">
                         {/* Image Section - Now on the left */}
-                        <div className="lg:w-1/2 w-full lg:h-auto h-64 lg:object-cover object-center rounded mb-6 lg:mb-0">
+                        <div className="lg:w-1/2 w-full h-auto lg:object-cover object-center rounded mb-6 lg:mb-0">
                             <div className="relative">
                                 <img 
                                     alt={prod.name} 
