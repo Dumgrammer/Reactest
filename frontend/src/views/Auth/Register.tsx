@@ -22,7 +22,7 @@ export default function Register() {
         if (storedUser) {
             try {
                 const userInfo = JSON.parse(storedUser) as UserInfo;
-                if (userInfo.token) {
+                if (userInfo.data.token) {
                     navigate("/");
                 }
             } catch (error) {

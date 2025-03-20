@@ -3,12 +3,14 @@ import { baseUrl } from "../Constants/BaseUrl";
 
 // Types
 export interface UserInfo {
-    _id: string;
-    name: string;
-    email: string;
-    isAdmin: boolean;
-    token: string;
-    createdAt: string;
+    data: {
+        _id: string;
+        name: string;
+        email: string;
+        isAdmin: boolean;
+        token: string;
+        createdAt: string;
+    }
 }
 
 export interface RegistrationResponse {
@@ -55,19 +57,19 @@ export const userLogin = async (email: string, password: string): Promise<AuthRe
         };
 
         const { data } = await axios.post<UserInfo>(`${baseUrl}/api/users/login`, { email, password }, config);
-        
+
         // Store user info in localStorage
         localStorage.setItem("userInfo", JSON.stringify(data));
-        
+
         // Set auth token for subsequent requests
-        setAuthToken(data.token);
+        setAuthToken(data.data.token);
 
         return { success: true, data };
 
     } catch (error: any) {
-        return { 
-            success: false, 
-            message: error.response?.data?.message || "Login failed" 
+        return {
+            success: false,
+            message: error.response?.data?.message || "Login failed"
         };
     }
 };
@@ -76,11 +78,12 @@ export const userLogin = async (email: string, password: string): Promise<AuthRe
 export const userLogoutAction = () => {
     // Clear auth data
     localStorage.removeItem("userInfo");
+    localStorage.removeItem("cartItems");
     setAuthToken("");
-    
+
     // Notify components about the logout
     window.dispatchEvent(new Event("storage"));
-    
+
     // Redirect to login
     document.location.href = "/login";
 };
@@ -101,8 +104,8 @@ export const userRegistration = async (registrationData: RegistrationData): Prom
 
         // Only proceed if registration was successful
         if (data.message) {
-            return { 
-                success: true, 
+            return {
+                success: true,
                 message: data.message,
                 data: {
                     email: registrationData.email,
@@ -111,9 +114,9 @@ export const userRegistration = async (registrationData: RegistrationData): Prom
             };
         }
 
-        return { 
-            success: false, 
-            message: "Registration failed. Please try again." 
+        return {
+            success: false,
+            message: "Registration failed. Please try again."
         };
     } catch (error: any) {
         return {
@@ -156,5 +159,5 @@ export const resendVerificationCode = async (email: string): Promise<Verificatio
 const userInfo = localStorage.getItem("userInfo");
 if (userInfo) {
     const parsedUser = JSON.parse(userInfo) as UserInfo;
-    setAuthToken(parsedUser.token);
+    setAuthToken(parsedUser.data.token);
 }

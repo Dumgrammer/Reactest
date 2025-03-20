@@ -13,25 +13,37 @@ import Searched from "./views/Searched";
 import VerifyCode from "./views/VerifyCode";
 
 interface UserInfo {
-  id: string;
-  name: string;
-  email: string;
-  isAdmin: boolean;
+  data: {
+    _id: string;
+    name: string;
+    email: string;
+    isAdmin: boolean;
+    token: string;
+    createdAt: string;
+  };
 }
 
 // Admin Route Protection Component
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const userInfo = localStorage.getItem("userInfo");
+
   if (!userInfo) {
     return <Navigate to="/login" />;
   }
 
-  const user = JSON.parse(userInfo) as UserInfo;
-  if (!user.isAdmin) {
-    return <Navigate to="/" />;
-  }
+  try {
 
-  return <>{children}</>;
+    const user = JSON.parse(userInfo) as UserInfo;
+    
+    if (!user.data?.isAdmin) {
+      return <Navigate to="/" />;
+    }
+    
+    return <>{children}</>;
+  } catch (error) {
+    localStorage.removeItem("userInfo");
+    return <Navigate to="/login" />;
+  }
 };
 
 function App() {

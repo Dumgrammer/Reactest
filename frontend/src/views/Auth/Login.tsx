@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import Layout from "../../Layout/Layouts";
 import { userLogin, UserInfo } from "../../Actions/User";
 import '../../styles.css';
@@ -19,8 +19,8 @@ export default function Login() {
         if (storedUser) {
             try {
                 // Validate stored user data
-                const userInfo = JSON.parse(storedUser) as UserInfo;
-                if (userInfo.token) {
+                const userInfo = JSON.parse(storedUser);
+                if (userInfo.data?.token) {
                     navigate("/");
                 } else {
                     // Invalid stored data, clear it
@@ -42,43 +42,28 @@ export default function Login() {
         }));
     };
 
-    const loginForm = async (e: React.FormEvent) => {
+    const submitForm = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError("");
 
         try {
             const response = await userLogin(formData.email, formData.password);
-
-            if (!response.success) {
-                // If user is not verified, redirect to verification page
-                if (response.message === "Please verify your email first!") {
-                    navigate("/verify-code", { 
-                        state: { 
-                            email: formData.email,
-                            message: "Please verify your email to continue"
-                        } 
-                    });
-                    return;
-                }
-                setError(response.message || "Login failed");
-                return;
-            }
-
-            // Check if user is admin and redirect accordingly
-            if (response.data && 'isAdmin' in response.data) {
-                if (response.data.isAdmin) {
-                    navigate("/admin");
+            console.log("Login response:", response);
+            if (response.success && response.data) {
+                window.dispatchEvent(new Event("storage"));
+                const userData = (response.data as any).data;
+                console.log(userData.isAdmin);
+                if (userData.isAdmin) {
+                    window.location.href = "/admin";
                 } else {
-                    navigate("/");
+                    window.location.href = "/";
                 }
+            } else {
+                setError(response.message || "Login failed");
             }
-
-            // Trigger storage event for other components
-            window.dispatchEvent(new Event('storage'));
         } catch (err) {
-            setError("An unexpected error occurred. Please try again.");
-            console.error("Login error:", err);
+            setError("An error occurred during login");
         } finally {
             setLoading(false);
         }
@@ -104,15 +89,15 @@ export default function Login() {
                                     <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                                         Sign in to your account
                                     </h1>
-                                    <form className="space-y-4 md:space-y-6" onSubmit={loginForm}>
+                                    <form className="space-y-4 md:space-y-6" onSubmit={submitForm}>
                                         <div>
                                             <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-                                            <input 
-                                                type="email" 
+                                            <input
+                                                type="email"
                                                 id="email"
                                                 name="email"
-                                                className="bg-gray-50 border text-gray-900 rounded-lg w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
-                                                placeholder="name@company.com" 
+                                                className="bg-gray-50 border text-gray-900 rounded-lg w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                                placeholder="name@company.com"
                                                 required
                                                 value={formData.email}
                                                 onChange={handleInputChange}
@@ -120,31 +105,31 @@ export default function Login() {
                                         </div>
                                         <div>
                                             <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-                                            <input 
-                                                type="password" 
+                                            <input
+                                                type="password"
                                                 id="password"
                                                 name="password"
-                                                placeholder="••••••••" 
-                                                className="bg-gray-50 border text-gray-900 rounded-lg w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
+                                                placeholder="••••••••"
+                                                className="bg-gray-50 border text-gray-900 rounded-lg w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                                                 required
                                                 value={formData.password}
                                                 onChange={handleInputChange}
                                             />
                                         </div>
-                                        <button 
-                                            type="submit" 
+                                        <button
+                                            type="submit"
                                             className="w-full p-btn font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600"
                                             disabled={loading}
                                         >
                                             {loading ? 'Signing in...' : 'Sign in'}
                                         </button>
                                         <div className="separator-text">or</div>
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             // onClick={handleGoogleSignIn} 
                                             className="oauth-button"
                                         >
-                                            <img src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" alt="Google Logo"/>
+                                            <img src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" alt="Google Logo" />
                                             Continue with Google
                                         </button>
                                         <p className="text-sm font-light text-gray-500 dark:text-gray-400">
