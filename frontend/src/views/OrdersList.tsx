@@ -77,8 +77,28 @@ export default function OrdersList() {
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            second: '2-digit'
         });
+    };
+
+    const formatUserName = (user: any) => {
+        if (!user) return 'N/A';
+        if (user.name) return user.name;
+        if (user.firstname) return `${user.firstname} ${user.middlename ? user.middlename + ' ' : ''}${user.lastname}`;
+        return user._id ? `User ${user._id.slice(-6).toUpperCase()}` : 'N/A';
+    };
+
+    const formatAddress = (shippingAddress: any) => {
+        if (!shippingAddress) return 'N/A';
+        
+        const parts = [];
+        if (shippingAddress.address) parts.push(shippingAddress.address);
+        if (shippingAddress.city) parts.push(shippingAddress.city);
+        if (shippingAddress.postalCode) parts.push(shippingAddress.postalCode);
+        if (shippingAddress.country) parts.push(shippingAddress.country);
+        
+        return parts.join(', ') || 'N/A';
     };
 
     const getStatusColor = (isPaid: boolean, isDelivered: boolean) => {
@@ -197,10 +217,10 @@ export default function OrdersList() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="text-sm text-gray-900">
-                                                        {order.user.name || 'N/A'}
+                                                        {formatUserName(order.user)}
                                                     </div>
                                                     <div className="text-sm text-gray-500">
-                                                        {order.shippingAddress.city}
+                                                        {order.shippingAddress.city || 'N/A'}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -268,20 +288,24 @@ export default function OrdersList() {
                                         <h3 className="text-sm font-medium text-gray-500 mb-2">Customer Information</h3>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <p className="text-sm text-gray-900">{selectedOrder.user.name}</p>
-                                                <p className="text-sm text-gray-500">{selectedOrder.shippingAddress.address}</p>
-                                                <p className="text-sm text-gray-500">
-                                                    {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.postalCode}
-                                                </p>
-                                                <p className="text-sm text-gray-500">{selectedOrder.shippingAddress.country}</p>
+                                                <p className="text-sm text-gray-900">{formatUserName(selectedOrder.user)}</p>
+                                                <p className="text-sm text-gray-500">{formatAddress(selectedOrder.shippingAddress)}</p>
                                             </div>
                                             <div>
                                                 <p className="text-sm text-gray-500">Payment Method: {selectedOrder.paymentMethod}</p>
                                                 <p className="text-sm text-gray-500">
-                                                    Payment Status: {selectedOrder.isPaid ? 'Paid' : 'Unpaid'}
+                                                    Payment Status: {selectedOrder.isPaid ? (
+                                                        <span className="text-green-600">Paid</span>
+                                                    ) : (
+                                                        <span className="text-red-600">Unpaid</span>
+                                                    )}
                                                 </p>
                                                 <p className="text-sm text-gray-500">
-                                                    Delivery Status: {selectedOrder.isDelivered ? 'Delivered' : 'Pending'}
+                                                    Delivery Status: {selectedOrder.isDelivered ? (
+                                                        <span className="text-green-600">Delivered</span>
+                                                    ) : (
+                                                        <span className="text-yellow-600">Pending</span>
+                                                    )}
                                                 </p>
                                             </div>
                                         </div>

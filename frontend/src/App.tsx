@@ -11,6 +11,8 @@ import PaymentSuccess from './views/PaymentSuccess';
 import OrdersList from "./views/OrdersList";
 import Searched from "./views/Searched";
 import VerifyCode from "./views/VerifyCode";
+import Profile from "./views/Profile";
+import MyOrders from "./views/MyOrders";
 
 interface UserInfo {
   data: {
@@ -79,6 +81,8 @@ function App() {
         <Route path="/search" element={<Searched/>}></Route>
         <Route path="/payment" element={<Payment/>}></Route>
         <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/myorders" element={<MyOrders />} />
         
         {/* Protected Admin Routes */}
         <Route path="/admin" element={<AdminRoute><Admin/></AdminRoute>}></Route>

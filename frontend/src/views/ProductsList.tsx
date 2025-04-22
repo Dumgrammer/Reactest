@@ -158,6 +158,25 @@ export default function ProductsList() {
                     </button>
                 </div>
 
+                {/* Stock Legend */}
+                <div className="bg-white p-3 mb-4 rounded-lg shadow-sm">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Stock Level Legend:</h3>
+                    <div className="flex flex-wrap gap-4">
+                        <div className="flex items-center">
+                            <span className="w-4 h-4 inline-block bg-green-100 rounded-full mr-2"></span>
+                            <span className="text-xs text-gray-600">Above 100: Sufficient stock</span>
+                        </div>
+                        <div className="flex items-center">
+                            <span className="w-4 h-4 inline-block bg-yellow-100 rounded-full mr-2"></span>
+                            <span className="text-xs text-gray-600">Below 50: Low stock</span>
+                        </div>
+                        <div className="flex items-center">
+                            <span className="w-4 h-4 inline-block bg-red-100 rounded-full mr-2"></span>
+                            <span className="text-xs text-gray-600">Below 10: Critical stock</span>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Main Content */}
                 <div className="bg-white rounded-lg shadow">
                     {loading ? (
@@ -208,14 +227,26 @@ export default function ProductsList() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                        product.countInStock > 10 
+                                                        product.countInStock > 100 
                                                             ? 'bg-green-100 text-green-800'
-                                                            : product.countInStock > 0
+                                                            : product.countInStock >= 10
                                                             ? 'bg-yellow-100 text-yellow-800'
                                                             : 'bg-red-100 text-red-800'
                                                     }`}>
                                                         {product.countInStock}
                                                     </span>
+                                                    {product.size && product.size.length > 0 && (
+                                                        <div className="mt-1 text-xs text-gray-500">
+                                                            <span className="block mb-1">Available sizes:</span>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {product.size.map((size: string, idx: number) => (
+                                                                    <span key={idx} className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
+                                                                        {size}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center">

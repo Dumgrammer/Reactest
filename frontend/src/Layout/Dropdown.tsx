@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { userLogoutAction } from "../Actions/User";
+import { Link } from "react-router-dom";
 
 export default function Dropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,25 +48,26 @@ export default function Dropdown() {
           </div>
 
           {/* Menu Buttons */}
-          <div className="py-2 flex flex-col">
-            <button
-              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white text-left"
-            >
-              Dashboard
-            </button>
-            <button
-              className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white text-left"
-            >
-              Settings
-            </button>
-          </div>
+          <div className="py-1" role="none">
+            <span className="block px-4 py-2 text-sm text-gray-700 truncate font-medium bg-gray-100">
+              {userInfo ? (userInfo.data?.name || 'User') : 'Guest'}
+            </span>
+            
+            <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+              Profile
+            </Link>
+            
+            <Link to="/myorders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+              My Orders
+            </Link>
+            
+            {userInfo?.data?.isAdmin && (
+              <Link to="/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                Admin Dashboard
+              </Link>
+            )}
 
-          {/* Sign Out Button */}
-          <div className="py-2 border-t border-gray-100 dark:border-gray-600">
-            <button
-              onClick={handleLogout}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-            >
+            <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
               Sign out
             </button>
           </div>

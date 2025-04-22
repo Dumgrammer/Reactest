@@ -84,7 +84,7 @@ exports.getSpecificProduct = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
     try {
-        const { name, description, type, rating, numReview, price, countInStock, category } = req.body;
+        const { name, description, type, rating, numReview, price, category, inventory } = req.body;
 
         // Check for images
         if (!req.files || req.files.length === 0) {
@@ -110,6 +110,27 @@ exports.createProduct = async (req, res) => {
         // Process image paths
         const imagePaths = req.files.map(file => file.path.replace(/\\/g, "/"));
 
+        // Parse inventory data if provided
+        let inventoryItems = [];
+        if (inventory) {
+            try {
+                inventoryItems = JSON.parse(inventory);
+            } catch (error) {
+                console.error("Error parsing inventory data:", error);
+                return send.sendResponse(res, 400, null, "Invalid inventory data format");
+            }
+        } else {
+            // Create default inventory with quantity 0 for each size/type combination
+            sizes.forEach(size => {
+                types.forEach(type => {
+                    inventoryItems.push({ size, type, quantity: 0 });
+                });
+            });
+        }
+
+        // Calculate total stock
+        const totalStock = inventoryItems.reduce((sum, item) => sum + parseInt(item.quantity), 0);
+
         const product = new Product({
             name,
             image: imagePaths,
@@ -120,7 +141,8 @@ exports.createProduct = async (req, res) => {
             rating: Number(rating) || 0,
             numReview: Number(numReview) || 0,
             price: Number(price) || 0,
-            countInStock: Number(countInStock) || 0
+            inventory: inventoryItems,
+            countInStock: totalStock // Set countInStock to total for backward compatibility
         });
 
         const newProduct = await product.save();
@@ -151,7 +173,7 @@ exports.updateProduct = async (req, res) => {
         }
 
         // Get the basic fields
-        const { name, description, type, rating, numReview, price, countInStock, category } = req.body;
+        const { name, description, type, rating, numReview, price, category, inventory } = req.body;
         
         // Handle arrays for type and size
         const types = Array.isArray(type) ? type : [type];
@@ -177,6 +199,37 @@ exports.updateProduct = async (req, res) => {
             updatedImages = existingProduct.image;
         }
 
+        // Parse inventory data if provided
+        let inventoryItems = existingProduct.inventory || [];
+        if (inventory) {
+            try {
+                inventoryItems = JSON.parse(inventory);
+            } catch (error) {
+                console.error("Error parsing inventory data:", error);
+                return send.sendResponse(res, 400, null, "Invalid inventory data format");
+            }
+        } else {
+            // Create default inventory with quantity 0 for each size/type combination
+            inventoryItems = [];
+            sizes.forEach(size => {
+                types.forEach(type => {
+                    // Try to find existing inventory for this size/type
+                    const existingInventory = existingProduct.inventory?.find(
+                        item => item.size === size && item.type === type
+                    );
+                    
+                    inventoryItems.push({ 
+                        size, 
+                        type, 
+                        quantity: existingInventory ? existingInventory.quantity : 0 
+                    });
+                });
+            });
+        }
+
+        // Calculate total stock
+        const totalStock = inventoryItems.reduce((sum, item) => sum + parseInt(item.quantity), 0);
+
         const updatedProduct = await Product.findByIdAndUpdate(
             id,
             {
@@ -186,10 +239,11 @@ exports.updateProduct = async (req, res) => {
                 rating: Number(rating),
                 numReview: Number(numReview),
                 price: Number(price),
-                countInStock: Number(countInStock),
                 category,
                 size: sizes,
-                image: updatedImages
+                image: updatedImages,
+                inventory: inventoryItems,
+                countInStock: totalStock // Update countInStock for backward compatibility
             },
             { new: true }
         );

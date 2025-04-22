@@ -1,6 +1,12 @@
-import React, { useState, KeyboardEvent } from "react";
+import React, { useState, KeyboardEvent, useEffect } from "react";
 import { addProductAction } from "../Actions/Product";
-import Success from "./modals/Success";
+import InventoryManager from "./InventoryManager";
+
+interface InventoryItem {
+  size: string;
+  type: string;
+  quantity: number;
+}
 
 interface ModalProps {
   isOpen: boolean;
@@ -12,12 +18,12 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
   const [productPrice, setProductPrice] = useState("");
-  const [countInStock, setCountInStock] = useState("");
   const [category, setCategory] = useState("");
   const [types, setTypes] = useState<string[]>([]);
   const [newType, setNewType] = useState("");
   const [sizes, setSizes] = useState<string[]>([]);
   const [newSize, setNewSize] = useState("");
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [rating] = useState("5");
@@ -25,16 +31,35 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Create default inventory items when sizes or types change
+  useEffect(() => {
+    if (sizes.length > 0 && types.length > 0) {
+      const newInventory: InventoryItem[] = [];
+      sizes.forEach(size => {
+        types.forEach(type => {
+          // Check if this combination already exists
+          const existingItem = inventory.find(item => item.size === size && item.type === type);
+          if (existingItem) {
+            newInventory.push(existingItem);
+          } else {
+            newInventory.push({ size, type, quantity: 0 });
+          }
+        });
+      });
+      setInventory(newInventory);
+    }
+  }, [sizes, types]);
+
   const resetForm = () => {
     setProductName("");
     setProductDescription("");
     setProductPrice("");
-    setCountInStock("");
     setCategory("");
     setTypes([]);
     setNewType("");
     setSizes([]);
     setNewSize("");
+    setInventory([]);
     setImages([]);
     setImagePreviews([]);
     setError("");
@@ -79,6 +104,8 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
 
   const removeType = (typeToRemove: string) => {
     setTypes(types.filter(type => type !== typeToRemove));
+    // Remove inventory items with this type
+    setInventory(inventory.filter(item => item.type !== typeToRemove));
   };
 
   // Handle sizes
@@ -98,6 +125,12 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
 
   const removeSize = (sizeToRemove: string) => {
     setSizes(sizes.filter(size => size !== sizeToRemove));
+    // Remove inventory items with this size
+    setInventory(inventory.filter(item => item.size !== sizeToRemove));
+  };
+
+  const handleInventoryChange = (updatedInventory: InventoryItem[]) => {
+    setInventory(updatedInventory);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -142,17 +175,21 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
         return;
     }
 
-    if (!countInStock || Number(countInStock) < 0) {
-        setError("Valid stock quantity is required");
-        setLoading(false);
-        return;
-    }
-
     if (images.length === 0) {
         setError("At least one image is required");
         setLoading(false);
         return;
     }
+
+    // Check if any inventory items exist
+    if (inventory.length === 0) {
+        setError("Inventory information is required");
+        setLoading(false);
+        return;
+    }
+
+    // Calculate total stock
+    const totalStock = inventory.reduce((sum, item) => sum + item.quantity, 0);
 
     const formData = new FormData();
     formData.append("name", productName.trim());
@@ -161,7 +198,13 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
     formData.append("category", category);
     types.forEach(type => formData.append("type", type.trim()));
     sizes.forEach(size => formData.append("size", size.trim()));
-    formData.append("countInStock", countInStock);
+    
+    // Add inventory data as JSON
+    formData.append("inventory", JSON.stringify(inventory));
+    
+    // Keep countInStock for backward compatibility
+    formData.append("countInStock", totalStock.toString());
+    
     formData.append("rating", rating);
     formData.append("numReview", numReview);
     
@@ -342,27 +385,15 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Price</label>
-                    <input
-                      type="number"
-                      value={productPrice}
-                      onChange={(e) => setProductPrice(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Stock</label>
-                    <input
-                      type="number"
-                      value={countInStock}
-                      onChange={(e) => setCountInStock(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Price</label>
+                  <input
+                    type="number"
+                    value={productPrice}
+                    onChange={(e) => setProductPrice(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required
+                  />
                 </div>
 
                 {/* Sizes */}
@@ -405,6 +436,24 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
                 </div>
               </div>
             </div>
+
+            {/* Inventory Manager */}
+            {sizes.length > 0 && types.length > 0 && (
+              <div className="mt-6 border-t pt-4">
+                <InventoryManager 
+                  sizes={sizes}
+                  types={types}
+                  inventory={inventory}
+                  onChange={handleInventoryChange}
+                />
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
 
             <div className="flex justify-end gap-4 mt-6">
               <button

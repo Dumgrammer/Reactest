@@ -307,7 +307,15 @@ exports.getUserProfile = async(req, res) => {
 exports.updateUserProfile = async (req, res) => {
     try {
         const id = req.user.id;
-        const { firstname, middlename, lastname, email, password, oldPassword } = req.body;
+        const { 
+            firstname, 
+            middlename, 
+            lastname, 
+            email, 
+            password, 
+            oldPassword,
+            address 
+        } = req.body;
 
         const userProfile = await User.findById(id);
 
@@ -338,6 +346,16 @@ exports.updateUserProfile = async (req, res) => {
         userProfile.middlename = middlename || userProfile.middlename;
         userProfile.lastname = lastname || userProfile.lastname;
         userProfile.email = email || userProfile.email;
+        
+        // Update address if provided
+        if (address) {
+            userProfile.address = {
+                street: address.street || userProfile.address.street,
+                city: address.city || userProfile.address.city,
+                postalCode: address.postalCode || userProfile.address.postalCode,
+                country: address.country || userProfile.address.country
+            };
+        }
 
         const updatedProfile = await userProfile.save();
         
@@ -347,6 +365,7 @@ exports.updateUserProfile = async (req, res) => {
             middlename: updatedProfile.middlename,
             lastname: updatedProfile.lastname,
             email: updatedProfile.email,
+            address: updatedProfile.address,
             isAdmin: updatedProfile.isAdmin,
             createdAt: updatedProfile.createdAt,
             token: generateToken.generateToken(updatedProfile._id)

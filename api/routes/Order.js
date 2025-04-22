@@ -11,4 +11,8 @@ router.post('/', orderController.orderProduct);
 
 router.put('/:id/payment', orderController.orderPayment);
 
+router.get('/all', orderController.getAllOrders);
+router.get('/myorders/:id', orderController.getUserOrders);
+router.get('/myorders/:userId/:orderId', orderController.getUserOrderById);
+
 module.exports = router;

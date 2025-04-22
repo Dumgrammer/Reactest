@@ -101,6 +101,27 @@ export const createGcashCheckout = async (cart: any[], total: number) => {
 // Create Order with GCash
 export const createGcashOrder = async (cart: any[], total: number) => {
     try {
+        // Get user info for address
+        const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+        if (!userInfo.data?._id) {
+            throw new Error("Please login to place an order");
+        }
+
+        // Fetch user profile for address information
+        const profileResponse = await fetch(`${baseUrl}/api/users/profile`, {
+            headers: {
+                Authorization: `Bearer ${userInfo.data.token}`
+            }
+        });
+        
+        const profileData = await profileResponse.json();
+        const userAddress = profileData.data.address || {
+            address: "Test Address",
+            city: "Test City",
+            postalCode: "1234",
+            country: "Philippines"
+        };
+
         // 1. Create the order first
         const orderResponse = await createOrder({
             orderItems: cart.map(item => ({
@@ -115,10 +136,10 @@ export const createGcashOrder = async (cart: any[], total: number) => {
             shippingPrice: 0,
             totalPrice: total,
             shippingAddress: {
-                address: "Test Address",
-                city: "Test City",
-                postalCode: "1234",
-                country: "Philippines"
+                address: userAddress.street || "Test Address",
+                city: userAddress.city || "Test City",
+                postalCode: userAddress.postalCode || "1234",
+                country: userAddress.country || "Philippines"
             }
         });
 
@@ -158,7 +179,7 @@ export const createOrder = async (orderData: Partial<Order>) => {
         const config = {
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${userInfo.token}`
+                Authorization: `Bearer ${userInfo.data.token}`
             }
         };
 
@@ -191,6 +212,21 @@ export const createCashOnPickupOrder = async (cart: any[], total: number) => {
             throw new Error("Please login to place an order");
         }
 
+        // Fetch user profile for address information
+        const profileResponse = await fetch(`${baseUrl}/api/users/profile`, {
+            headers: {
+                Authorization: `Bearer ${userInfo.data.token}`
+            }
+        });
+        
+        const profileData = await profileResponse.json();
+        const userAddress = profileData.data.address || {
+            address: "Test Address",
+            city: "Test City",
+            postalCode: "1234",
+            country: "Philippines"
+        };
+
         // Format order data
         const orderData = {
             orderItems: cart.map(item => ({
@@ -205,10 +241,10 @@ export const createCashOnPickupOrder = async (cart: any[], total: number) => {
             shippingPrice: 0,
             totalPrice: total,
             shippingAddress: {
-                address: "Test Address",
-                city: "Test City",
-                postalCode: "1234",
-                country: "Philippines"
+                address: userAddress.street || "Test Address",
+                city: userAddress.city || "Test City",
+                postalCode: userAddress.postalCode || "1234",
+                country: userAddress.country || "Philippines"
             },
             user: userInfo.data._id
         };
@@ -217,7 +253,7 @@ export const createCashOnPickupOrder = async (cart: any[], total: number) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${userInfo.token}`
+                'Authorization': `Bearer ${userInfo.data.token}`
             },
             body: JSON.stringify(orderData)
         });
@@ -248,7 +284,7 @@ export const fetchOrders = async () => {
 
         const config = {
             headers: {
-                Authorization: `Bearer ${userInfo.token}`
+                Authorization: `Bearer ${userInfo.data.token}`
             }
         };
 
@@ -275,7 +311,7 @@ export const getOrderById = async (orderId: string) => {
 
         const config = {
             headers: {
-                Authorization: `Bearer ${userInfo.token}`
+                Authorization: `Bearer ${userInfo.data.token}`
             }
         };
 
@@ -357,6 +393,50 @@ export const processOrders = (orders: any[], filters: OrderFilters) => {
     );
 
     return processedOrders;
+};
+
+// Fetch user's personal order history
+export const fetchUserOrders = async () => {
+    try {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+        if (!userInfo.data?._id) {
+            throw new Error("Please login to view your orders");
+        }
+
+        const { data } = await axios.get(`${baseUrl}/api/orders/myorders/${userInfo.data._id}`);
+        
+        return { 
+            success: true, 
+            orders: data.data 
+        };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to fetch your orders'
+        };
+    }
+};
+
+// Fetch a specific user's order by ID
+export const fetchUserOrderById = async (orderId: string) => {
+    try {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+        if (!userInfo.data?._id) {
+            throw new Error("Please login to view your order details");
+        }
+
+        const { data } = await axios.get(`${baseUrl}/api/orders/myorders/${userInfo.data._id}/${orderId}`);
+        
+        return { 
+            success: true, 
+            order: data.data 
+        };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to fetch your order details'
+        };
+    }
 };
 
 

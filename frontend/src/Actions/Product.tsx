@@ -93,7 +93,7 @@ export const updateProductAction = async (id: string, productData: FormData) => 
     }
 };
 
-export const addToCart = (product: { _id: string; name: string; image: string; price: number; size?: string; quantity?: number }) => {
+export const addToCart = (product: { _id: string; name: string; image: string; price: number; size?: string; type?: string; quantity?: number }) => {
     // Check if user is logged in
     const userInfo = localStorage.getItem("userInfo");
     if (!userInfo) {
@@ -105,7 +105,8 @@ export const addToCart = (product: { _id: string; name: string; image: string; p
 
     const existingIndex = cart.findIndex(item => 
         item._id === product._id && 
-        (!product.size || item.size === product.size)
+        (!product.size || item.size === product.size) &&
+        (!product.type || item.type === product.type)
     );
 
     if (existingIndex !== -1) {
@@ -116,7 +117,8 @@ export const addToCart = (product: { _id: string; name: string; image: string; p
         cart.push({ 
             ...product, 
             quantity: product.quantity || 1,
-            size: product.size || null
+            size: product.size || null,
+            type: product.type || null
         });
     }
 

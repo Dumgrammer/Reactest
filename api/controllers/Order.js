@@ -121,3 +121,48 @@ exports.getSpecificOrders = async (req, res) => {
     }
 };
 
+exports.getUserOrders = async (req, res) => {
+    try {
+        // Get userId from query param instead of from the middleware
+        const userId = req.params.id;
+        
+        if (!userId) {
+            return send.sendBadRequestResponse(res, "User ID is required");
+        }
+
+        const userOrders = await Order.find({ user: userId });
+
+        if (userOrders.length === 0) {
+            return send.sendResponse(res, 200, [], "You haven't placed any orders yet");
+        }
+
+        return send.sendResponse(res, 200, userOrders, "Here are your orders!");
+
+    } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};
+
+exports.getUserOrderById = async (req, res) => {
+    try {
+        // Get userId and orderId from path parameters
+        const userId = req.params.userId;
+        const orderId = req.params.orderId;
+        
+        if (!userId) {
+            return send.sendBadRequestResponse(res, "User ID is required");
+        }
+        
+        const order = await Order.findOne({ _id: orderId, user: userId });
+
+        if (!order) {
+            return send.sendNotFoundResponse(res, "Order not found or doesn't belong to you");
+        }
+
+        return send.sendResponse(res, 200, order, "Here is your order details");
+
+    } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};
+

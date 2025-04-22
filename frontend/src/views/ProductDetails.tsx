@@ -5,6 +5,12 @@ import { productDetailAction, addToCart } from "../Actions/Product";
 import Success from "../components/modals/Success";
 import Failed from "../components/modals/Failed";
 
+type InventoryItem = {
+    size: string;
+    type: string;
+    quantity: number;
+};
+
 type Product = {
     _id: string;
     name: string;
@@ -17,6 +23,8 @@ type Product = {
     numReview: number;
     price: number;
     countInStock: number;
+    inventory: InventoryItem[];
+    totalStock: number;
 };
 
 function ProductDetail() {
@@ -27,7 +35,9 @@ function ProductDetail() {
     const [error, setError] = useState("");
     const [selectedSize, setSelectedSize] = useState("");
     const [selectedType, setSelectedType] = useState("");
+    const [quantity, setQuantity] = useState(1);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [availableQuantity, setAvailableQuantity] = useState(0);
 
     // Success Modal
     const [isSuccessOpen, setIsSuccessOpen] = useState<boolean>(false);
@@ -61,6 +71,24 @@ function ProductDetail() {
 
         fetchProduct();
     }, [id]);
+
+    // Update available quantity when size or type changes
+    useEffect(() => {
+        if (!prod) return;
+
+        // Find inventory item for selected size and type
+        const inventoryItem = prod.inventory?.find(
+            item => item.size === selectedSize && item.type === selectedType
+        );
+
+        // Set available quantity
+        setAvailableQuantity(inventoryItem?.quantity ?? prod.countInStock);
+        
+        // Reset quantity if current selection exceeds available
+        if (quantity > (inventoryItem?.quantity ?? prod.countInStock)) {
+            setQuantity(1);
+        }
+    }, [selectedSize, selectedType, prod]);
 
     // Add auto-slide effect
     useEffect(() => {
@@ -97,15 +125,28 @@ function ProductDetail() {
             image: prod.image[0],
             price: prod.price,
             size: selectedSize,
-            quantity: 1
+            type: selectedType,
+            quantity: quantity
         });
 
         setIsSuccessOpen(true);
     };
     
+    const incrementQuantity = () => {
+        if (quantity < availableQuantity) {
+            setQuantity(prev => prev + 1);
+        }
+    };
+    
+    const decrementQuantity = () => {
+        if (quantity > 1) {
+            setQuantity(prev => prev - 1);
+        }
+    };
+    
     if (!id) return <Layout><h1>Product ID is missing</h1></Layout>;
-    if (loading) return <Layout><h1>Loading...</h1></Layout>;
-    if (error) return <Layout><h1>{error}</h1></Layout>;
+    if (loading) return <Layout><div className="flex justify-center items-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div></div></Layout>;
+    if (error) return <Layout><div className="text-center text-red-500 p-4">{error}</div></Layout>;
 
     return prod ? (
         <Layout>
@@ -218,27 +259,74 @@ function ProductDetail() {
                                 <div className="flex border-t border-gray-200 py-2">
                                     <span className="text-gray-500">Size</span>
                                     <div className="flex flex-wrap gap-2 ml-4">
-                                        {prod.size.map((s: string) => (
-                                            <button
-                                                key={s}
-                                                onClick={() => setSelectedSize(s)}
-                                                className={`px-4 py-2 border-2 rounded-md text-sm ${
-                                                    selectedSize === s
-                                                    ? 'bg-green-50 border-green-500 text-green-700'
-                                                    : 'bg-white border-gray-300 text-gray-700 hover:border-green-500 hover:text-green-700'
-                                                }`}
-                                            >
-                                                {s}
-                                            </button>
-                                        ))}
+                                        {prod.size.map((s: string) => {
+                                            // Find inventory for this size and selected type
+                                            const inventoryItem = prod.inventory?.find(
+                                                item => item.size === s && item.type === selectedType
+                                            );
+                                            const stockAvailable = (inventoryItem?.quantity ?? 0) > 0;
+                                            
+                                            return (
+                                                <button
+                                                    key={s}
+                                                    onClick={() => setSelectedSize(s)}
+                                                    disabled={!stockAvailable}
+                                                    className={`px-4 py-2 border-2 rounded-md text-sm relative ${
+                                                        selectedSize === s
+                                                        ? 'bg-green-50 border-green-500 text-green-700'
+                                                        : stockAvailable
+                                                          ? 'bg-white border-gray-300 text-gray-700 hover:border-green-500 hover:text-green-700'
+                                                          : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                                                    }`}
+                                                >
+                                                    {s}
+                                                    {inventoryItem && (
+                                                        <span className="absolute -top-2 -right-2 bg-gray-200 text-xs rounded-full px-1.5 py-0.5">
+                                                            {inventoryItem?.quantity ?? 0}
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
 
+                            {/* Quantity Selector */}
+                            <div className="flex border-t border-gray-200 py-2">
+                                <span className="text-gray-500">Quantity</span>
+                                <div className="ml-auto flex items-center">
+                                    <button 
+                                        onClick={decrementQuantity}
+                                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l-md bg-gray-100 hover:bg-gray-200"
+                                        disabled={quantity <= 1}
+                                    >
+                                        <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
+                                        </svg>
+                                    </button>
+                                    <span className="w-12 h-8 flex items-center justify-center border-t border-b border-gray-300 bg-white">
+                                        {quantity}
+                                    </span>
+                                    <button 
+                                        onClick={incrementQuantity}
+                                        className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r-md bg-gray-100 hover:bg-gray-200"
+                                        disabled={quantity >= availableQuantity}
+                                    >
+                                        <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="flex border-t border-gray-200 py-2">
                                 <span className="text-gray-500">Stock Status</span>
-                                <span className={`ml-auto ${prod.countInStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {prod.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
+                                <span className={`ml-auto ${availableQuantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {availableQuantity > 0 
+                                        ? `In Stock (${availableQuantity} available)`
+                                        : 'Out of Stock'
+                                    }
                                 </span>
                             </div>
 
@@ -246,14 +334,14 @@ function ProductDetail() {
                                 <span className="title-font font-medium text-2xl text-gray-900">₱ {prod.price}</span>
                                 <button 
                                     onClick={handleAddToCart}
-                                    disabled={prod.countInStock === 0 || (!prod.size && !prod.type) || (prod.size && !selectedSize) || (prod.type && !selectedType)}
+                                    disabled={availableQuantity === 0 || (!prod.size && !prod.type) || (prod.size && !selectedSize) || (prod.type && !selectedType)}
                                     className={`flex ml-auto text-white px-6 py-2 rounded-md transition-colors duration-200 ${
-                                        prod.countInStock > 0 && ((!prod.size && !prod.type) || (prod.size && selectedSize) || (prod.type && selectedType))
+                                        availableQuantity > 0 && ((!prod.size && !prod.type) || (prod.size && selectedSize) || (prod.type && selectedType))
                                         ? 'bg-green-500 hover:bg-green-600'
                                         : 'bg-gray-400 cursor-not-allowed'
                                     }`}
                                 >
-                                    {prod.countInStock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                                    {availableQuantity > 0 ? 'Add to Cart' : 'Out of Stock'}
                                 </button>
                                 <button className="rounded-full w-10 h-10 bg-gray-200 p-0 border-0 inline-flex items-center justify-center text-gray-500 ml-4 hover:bg-gray-300 transition-colors duration-200">
                                     <svg fill="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" className="w-5 h-5" viewBox="0 0 24 24">
@@ -275,19 +363,19 @@ function ProductDetail() {
                 </>
                 }
                 title="Item Added to Cart" 
-                message="Product has been added to your cart"
+                message={`${quantity} ${quantity > 1 ? 'items' : 'item'} of ${prod.name} ${selectedSize ? `(Size: ${selectedSize})` : ''} ${selectedType ? `(Type: ${selectedType})` : ''} added to your cart`}
                 buttonText="Got it, thanks!"
                 onConfirm={() => setIsSuccessOpen(false)}
             />
 
-                {/* Failed Modal*/}
-                <Failed
+            {/* Failed Modal*/}
+            <Failed
                 isOpen={isFailedOpen} 
                 title="Oops!" 
                 message="There was an issue processing your request. Please try again"
                 buttonText="OK"
                 onConfirm={() => setIsFailedOpen(false)}
-                />
+            />
         </Layout>
     ) : null;
 }

@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    address: {
+        street: { type: String, default: '' },
+        city: { type: String, default: '' },
+        postalCode: { type: String, default: '' },
+        country: { type: String, default: 'Philippines' }
+    },
     isAdmin: {
         type: Boolean,
         default: false 
