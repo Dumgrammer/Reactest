@@ -159,6 +159,7 @@ export const createGcashOrder = async (cart: any[], total: number) => {
         } else {
             throw new Error("No checkout URL provided");
         }
+        localStorage.removeItem("cartItems");
     } catch (error: any) {
         console.error('Order creation error:', error);
         return {
@@ -265,6 +266,8 @@ export const createCashOnPickupOrder = async (cart: any[], total: number) => {
         }
 
         return { success: true, data };
+        localStorage.removeItem("cartItems");
+        
     } catch (error: any) {
         console.error('Order error:', error);
         return {
