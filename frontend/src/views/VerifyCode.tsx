@@ -6,6 +6,7 @@ import { verifyEmail, resendVerificationCode } from '../Actions/User';
 export default function VerifyCode() {
     const navigate = useNavigate();
     const location = useLocation();
+    
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
     const [verificationCode, setVerificationCode] = useState<string[]>(Array(6).fill(''));
     const [error, setError] = useState('');
@@ -13,14 +14,27 @@ export default function VerifyCode() {
     const [resendDisabled, setResendDisabled] = useState(false);
     const [countdown, setCountdown] = useState(30);
 
-    // Get email from location state
-    const email = location.state?.email;
+    // Get email from location state or localStorage
+    const [email, setEmail] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!email) {
-            navigate('/register');
+        // First try to get email from location state
+        const stateEmail = location.state?.email;
+        
+        // If not in state, try localStorage
+        const storedEmail = localStorage.getItem('pendingVerification');
+        
+        if (stateEmail) {
+            setEmail(stateEmail);
+            // Store in localStorage in case of page refresh
+            localStorage.setItem('pendingVerification', stateEmail);
+        } else if (storedEmail) {
+            setEmail(storedEmail);
+        } else {
+            // No email found, redirect to login
+            navigate('/login');
         }
-    }, [email, navigate]);
+    }, [location.state, navigate]);
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -58,6 +72,12 @@ export default function VerifyCode() {
         setError('');
         setLoading(true);
 
+        if (!email) {
+            setError('Email not found. Please return to login page.');
+            setLoading(false);
+            return;
+        }
+
         const code = verificationCode.join('');
         if (code.length !== 6) {
             setError('Please enter the complete verification code');
@@ -68,7 +88,11 @@ export default function VerifyCode() {
         try {
             const response = await verifyEmail(email, code);
             if (response.success) {
-                navigate('/login', { state: { message: 'Email verified successfully! Please login.' } });
+                // Clear the pending verification from localStorage
+                localStorage.removeItem('pendingVerification');
+                
+                // Use replace instead of navigate to avoid back button issues
+                window.location.href = '/login';
             } else {
                 setError(response.message || 'Verification failed');
             }
@@ -80,6 +104,11 @@ export default function VerifyCode() {
     };
 
     const handleResendCode = async () => {
+        if (!email) {
+            setError('Email not found. Please return to login page.');
+            return;
+        }
+
         setResendDisabled(true);
         setCountdown(30);
         setError('');
@@ -139,6 +168,11 @@ export default function VerifyCode() {
                                 ? `Resend code in ${countdown}s` 
                                 : 'Resend verification code'}
                         </button>
+                        <div className="mt-4">
+                            <a href="/login" className="text-blue-600 hover:text-blue-800">
+                                Back to login
+                            </a>
+                        </div>
                     </form>
                 </div>
             </div>

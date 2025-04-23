@@ -100,14 +100,21 @@ const setAuthToken = (token: string) => {
 export const userLogin = async (email: string, password: string): Promise<ApiResponse> => {
     try {
         const { data } = await axios.post(`${baseUrl}/api/users/login`, { email, password });
+
         if (data.success) {
-            localStorage.setItem('userInfo', JSON.stringify(data));
+            // Only store user info in localStorage if user is verified
+            if (data.data && data.data.isVerified !== false) {
+                localStorage.setItem('userInfo', JSON.stringify(data));
+            }
         }
+
         return data;
     } catch (error: any) {
+        const responseData = error.response?.data;
         return {
             success: false,
-            message: error.response?.data?.message || 'An error occurred during login'
+            message: responseData?.message || 'An error occurred during login',
+            data: responseData // Include additional data like email and isVerified
         };
     }
 };
@@ -136,9 +143,22 @@ export const userLogin = async (email: string, password: string): Promise<ApiRes
 // };
 
 // User registration
-export const userRegistration = async (userData: any): Promise<ApiResponse> => {
+export const userRegistration = async (userData: any, navigate: any): Promise<ApiResponse> => {
     try {
         const { data } = await axios.post(`${baseUrl}/api/users/register`, userData);
+
+        if (data.success) {
+            // Always redirect to verification page after successful registration
+            return {
+                success: true,
+                message: data.message,
+                data: { 
+                    email: userData.email,
+                    verificationRequired: true
+                }
+            };
+        }
+
         return data;
     } catch (error: any) {
         return {

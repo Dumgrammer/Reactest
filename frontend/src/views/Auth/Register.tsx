@@ -85,27 +85,21 @@ export default function Register() {
         setLoading(true);
 
         try {
-            const response = await userRegistration(formData);
+            const response = await userRegistration(formData, navigate);
+            
             if (!response.success) {
                 setSnackbar({ open: true, message: response.message || "Registration failed.", type: "error" });
+                setLoading(false);
                 return;
             }
 
-            // Check if verification is required
-            if (response.data && 'verificationRequired' in response.data) {
-                navigate("/verify-code", {
-                    state: {
-                        email: formData.email,
-                        message: response.message
-                    }
-                });
-                setSnackbar({ open: true, message: "Registration successful! Please verify your email.", type: "success" });
-            } else {
-                setSnackbar({ open: true, message: "Registration completed but verification status is unknown.", type: "error" });
-            }
+            // After successful registration, always redirect to verify-code
+            navigate("/verify-code", {
+                state: { email: formData.email }
+            });
+            
         } catch (err) {
             setSnackbar({ open: true, message: "Failed to register user. Please try again.", type: "error" });
-        } finally {
             setLoading(false);
         }
     };

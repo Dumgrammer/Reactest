@@ -79,28 +79,61 @@ export default function Login() {
 
     const submitForm = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!validateInputs()) return;
+        
         setLoading(true);
         setError("");
-
+    
         try {
             console.log("Attempting login with:", formData.email);
             const response = await userLogin(formData.email, formData.password);
             console.log("Login response:", response);
+    
             if (response.success && response.data) {
-                window.dispatchEvent(new Event("storage"));
                 const userData = (response.data as any).data;
-
+                console.log("This is user: ", userData)
+                // Check if the user's email is verified
+                if (!userData.isVerified) {
+                    localStorage.setItem('pendingVerification', formData.email);
+                    navigate('/verify-code', { state: { email: formData.email } });
+                    return;
+                }
+    
+                // If verified, proceed with login
+                window.dispatchEvent(new Event("storage"));
                 setSnackbar({ open: true, message: "Login successful!", type: "success" });
 
-                console.log("User data:", userData);
-                if (userData.isAdmin) {
-                    window.location.href = "/admin";
-                } else {
-                    window.location.href = "/";
-                }
+                // Use setTimeout to ensure the snackbar is shown before redirect
+                setTimeout(() => {
+                    if (userData.isAdmin) {
+                        window.location.href = "/admin";
+                    } else {
+                        window.location.href = "/";
+                    }
+                }, 500);
+            } else if (response.data && response.data.isVerified === false) {
+                // Handle unverified user case - redirect to verification
+                localStorage.setItem('pendingVerification', formData.email);
+                navigate('/verify-code', { state: { email: formData.email } });
+            } else if (response.message === "Please verify your email first!" && response.data?.email) {
+                // Redirect to verification page based on message
+                localStorage.setItem('pendingVerification', response.data.email);
+                navigate('/verify-code', { state: { email: response.data.email } });
             } else {
                 console.error("Login failed:", response.message);
-                setSnackbar({ open: true, message: response.message || "Wrong username or password.", type: "error" });
+    
+                // Ensure response.message is a string
+                const errorMessage = typeof response.message === "string" ? response.message : "An error occurred.";
+                
+                // Check if error message is related to verification
+                if (errorMessage.toLowerCase().includes("verify")) {
+                    // If message contains "verify", redirect to verification with the email
+                    localStorage.setItem('pendingVerification', formData.email);
+                    navigate('/verify-code', { state: { email: formData.email } });
+                    return;
+                }
+                
+                setSnackbar({ open: true, message: errorMessage, type: "error" });
             }
         } catch (err) {
             console.error("Login error:", err);
@@ -195,6 +228,16 @@ export default function Login() {
                                             Don't have an account yet?{' '}
                                             <Link to="/register">
                                                 <span className="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</span>
+                                            </Link>
+                                        </p>
+                                        <p className="text-sm font-light text-gray-500 dark:text-gray-400 mt-2">
+                                            Need to verify your email?{' '}
+                                            <Link to="/verify-code" onClick={() => {
+                                                if (formData.email) {
+                                                    localStorage.setItem('pendingVerification', formData.email);
+                                                }
+                                            }}>
+                                                <span className="font-medium text-primary-600 hover:underline dark:text-primary-500">Go to verification</span>
                                             </Link>
                                         </p>
                                     </form>
