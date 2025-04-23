@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchUserOrders, fetchUserOrderById } from '../Actions/Order';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../Layout/Layouts';
+import CoopLoc from '../components/modals/CoopLoc';
 
 interface OrderItem {
   _id: string;
@@ -30,6 +31,7 @@ const MyOrders: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [viewingDetails, setViewingDetails] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
 
   const navigate = useNavigate();
 
@@ -53,6 +55,10 @@ const MyOrders: React.FC = () => {
 
     loadOrders();
   }, []);
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
 
   const viewOrderDetails = async (orderId: string) => {
     setLoading(true);
@@ -207,8 +213,32 @@ const MyOrders: React.FC = () => {
 
   return (
     <Layout>
+      {/* Show the Location of the Coop Modal */}
+      <CoopLoc
+          isOpen={isModalOpen}
+          gif={
+            <>
+            <img className='mx-auto w-1/3' src="/GC COOP LOGO.jpg"/>
+            </>
+            }
+          title="Where to claim my order?"
+          message="GC Coop is located at GC Building, 2nd Floor Rm. 203"
+          buttonText="Got it, thanks!"
+          onConfirm={closeModal}
+        />
+
       <div className="container mx-auto px-4 py-8">
+        <div className='flex justify-between items-center'>
         <h1 className="text-2xl font-bold mb-6">My Orders</h1>
+
+        {/* Button for Coop Location modal */}
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="text-green-600 hover:text-green-900 underline"
+        >
+          Where can I claim my order?
+        </button>
+        </div>
 
         {orders.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-6 text-center">
