@@ -105,7 +105,7 @@ function Product() {
                                                 {product.size && product.size.length > 0 && (
                                                     <div className="mt-2">
                                                         <span className="text-xs text-gray-500">Available sizes:</span>
-                                                        <div className="flex flex-wrap gap-1 mt-1">
+                                                        <div className="flex flex-wrap gap-2 mt-2">
                                                             {product.size.map((size, index) => {
                                                                 const quantity = getSizeQuantity(product, size);
                                                                 const isAvailable = quantity > 0;
@@ -121,7 +121,7 @@ function Product() {
                                                                     >
                                                                         {size}
                                                                         {isAvailable && (
-                                                                            <span className="absolute -top-2 -right-2 bg-white text-xs rounded-full px-1.5 py-0.5 border border-green-300 text-green-800">
+                                                                            <span className="absolute -top-3 -left-3 bg-white text-xs rounded-full px-1.5 py-0.5 border border-green-300 text-green-800">
                                                                                 {quantity}
                                                                             </span>
                                                                         )}
