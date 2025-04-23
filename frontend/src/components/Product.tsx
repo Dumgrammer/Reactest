@@ -120,11 +120,7 @@ function Product() {
                                                                             }`}
                                                                     >
                                                                         {size}
-                                                                        {isAvailable && (
-                                                                            <span className="absolute -top-3 -left-3 bg-white text-xs rounded-full px-1.5 py-0.5 border border-green-300 text-green-800">
-                                                                                {quantity}
-                                                                            </span>
-                                                                        )}
+                                                                        
                                                                     </span>
                                                                 );
                                                             })}

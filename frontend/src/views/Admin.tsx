@@ -124,7 +124,7 @@ export default function Admin() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     {/* Payment Methods */}
-                    <Card>
+                    {/* <Card>
                         <div className="p-4">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-semibold text-gray-800">Payment Methods</h3>
@@ -171,7 +171,7 @@ export default function Admin() {
                                 ))}
                             </div>
                         </div>
-                    </Card>
+                    </Card> */}
 
                     {/* Revenue Trend */}
                     <Card className="lg:col-span-2">
