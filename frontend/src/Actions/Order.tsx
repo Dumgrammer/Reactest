@@ -406,7 +406,8 @@ export const fetchUserOrders = async () => {
             throw new Error("Please login to view your orders");
         }
 
-        const { data } = await axios.get(`${baseUrl}/api/orders/myorders/${userInfo.data._id}`);
+        const { data } = await axios.get(`${baseUrl}/api/orders/myorders/${userInfo.data._id}`, {
+        });
         
         return { 
             success: true, 
@@ -428,7 +429,11 @@ export const fetchUserOrderById = async (orderId: string) => {
             throw new Error("Please login to view your order details");
         }
 
-        const { data } = await axios.get(`${baseUrl}/api/orders/myorders/${userInfo.data._id}/${orderId}`);
+        const { data } = await axios.get(`${baseUrl}/api/orders/myorders/${orderId}`, {
+            params: {
+                userId: userInfo.data._id
+            }
+        });
         
         return { 
             success: true, 
@@ -438,6 +443,44 @@ export const fetchUserOrderById = async (orderId: string) => {
         return {
             success: false,
             message: error.response?.data?.message || 'Failed to fetch your order details'
+        };
+    }
+};
+
+// Update order payment and delivery status
+export const updateOrderStatus = async (orderId: string, statusType: 'payment' | 'delivery', value: boolean) => {
+    try {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+        if (!userInfo.data?._id) {
+            throw new Error("Please login to update order status");
+        }
+
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${userInfo.data.token}`
+            }
+        };
+
+        // Construct the payload based on status type
+        const payload = statusType === 'payment' 
+            ? { isPaid: value, paidAt: value ? new Date().toISOString() : null }
+            : { isDelivered: value, deliveredAt: value ? new Date().toISOString() : null };
+
+        const { data } = await axios.put(
+            `${baseUrl}/api/orders/${orderId}/status`,
+            payload,
+            config
+        );
+        
+        return { 
+            success: true, 
+            order: data.data 
+        };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || `Failed to update ${statusType} status`
         };
     }
 };

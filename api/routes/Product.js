@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const adminLogger = require('../utils/AdminLogger');
+
 const productController = require('../controllers/Product');
 
 const storage = multer.diskStorage({
@@ -28,21 +30,59 @@ const fileFilter = (req, file, cb) => {
 }
 
 const upload = multer({
-    storage: storage, 
+    storage: storage,
     limits: {
         fileSize: 1024 * 1024 * 5
     },
     fileFilter: fileFilter
 });
 
+// Log admin actions middleware
+const logAdminAction = (action) => (req, res, next) => {
+    // Skip if not an admin user
+    if (!req.user || !req.user.isAdmin) {
+        return next();
+    }
+    
+    adminLogger.logAdminActivity(
+        req.user.id, 
+        req.user.name || 'Unknown Admin',
+        action,
+        {
+            productId: req.params.id,
+            ip: req.ip || req.connection.remoteAddress
+        }
+    );
+    
+    next();
+};
+
+// Regular product routes
 router.get('/', productController.getProduct);
 router.get('/search', productController.searchProduct);
 router.get('/:id', productController.getSpecificProduct);
 
+// Admin-only routes with logging
 router.post('/createproduct', upload.array('images', 5), productController.createProduct);
-
 router.patch('/:id', upload.array('images', 5), productController.updateProduct);
-
 router.delete('/:id', productController.deleteProduct);
+
+// Admin routes for all products and logs
+router.get('/admin/all', productController.getAllProductsAdmin);
+router.get('/admin/logs', (req, res) => {
+    try {
+        const logs = adminLogger.getAdminLogs();
+        return res.status(200).json({
+            success: true,
+            data: logs
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to retrieve admin logs",
+            error: error.message
+        });
+    }
+});
 
 module.exports = router;

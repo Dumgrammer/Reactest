@@ -6,6 +6,7 @@ export const fetchProducts = async () => {
         const { data } = await axios.get(`${baseUrl}/api/products`);
         return { success: true, products: data };
     } catch (error: any) {
+        console.error("Product fetch error:", error);
         return { success: false, message: error.response?.data?.message || "Failed to fetch products" };
     }
 };
@@ -219,6 +220,39 @@ export const getSizes = async () => {
             message: error.message || "Failed to fetch sizes",
             sizes: [] 
         };
+    }
+};
+
+// Fetch all products for admin (including archived)
+export const fetchAdminProducts = async () => {
+    try {
+        const { data } = await axios.get(`${baseUrl}/api/products`);
+        console.log("Admin products fetched:", data);
+        return { success: true, products: data };
+    } catch (error: any) {
+        console.error("Admin product fetch error:", error.response?.data || error.message);
+        return { success: false, message: error.response?.data?.message || "Failed to fetch admin products" };
+    }
+};
+
+// Fetch admin activity logs
+export const fetchAdminLogs = async () => {
+    try {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+        const token = userInfo.data?.token;
+        
+        if (!token) {
+            return { success: false, message: "Admin authentication required" };
+        }
+
+        const { data } = await axios.get(`${baseUrl}/api/products/admin/logs`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return { success: true, logs: data.data };
+    } catch (error: any) {
+        return { success: false, message: error.response?.data?.message || "Failed to fetch admin logs" };
     }
 };
 

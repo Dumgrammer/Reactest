@@ -13,6 +13,7 @@ import Searched from "./views/Searched";
 import VerifyCode from "./views/VerifyCode";
 import Profile from "./views/Profile";
 import MyOrders from "./views/MyOrders";
+import OAuthCallback from "./views/Auth/OAuthCallback";
 
 interface UserInfo {
   data: {
@@ -75,6 +76,7 @@ function App() {
         <Route path="/login" element={userInfo ? <Navigate to="/" /> : <Login />} />
         <Route path="/register" element={userInfo ? <Navigate to="/" /> : <Register />} />
         <Route path="/verify-code" element={<VerifyCode/>} />
+        <Route path="/oauth-callback" element={<OAuthCallback />} />
         
         <Route path="/" element={<Home/>}></Route>
         <Route path="/products/:id" element={<ProductDetail/>}></Route>

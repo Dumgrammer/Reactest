@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Layout from "../../Layout/Layouts";
-import { userLogin, UserInfo } from "../../Actions/User";
+import { userLogin } from "../../Actions/User";
 import '../../styles.css';
+import { baseUrl } from "../../Constants/BaseUrl";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -12,6 +13,18 @@ export default function Login() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    // Check for error query parameter
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorParam = urlParams.get('error');
+        
+        if (errorParam === 'auth_failed') {
+            setError("Authentication failed. Please try again.");
+        } else if (errorParam === 'missing_data') {
+            setError("Missing authentication data. Please try again.");
+        }
+    }, []);
 
     // Check for existing login on component mount
     useEffect(() => {
@@ -48,25 +61,35 @@ export default function Login() {
         setError("");
 
         try {
+            console.log("Attempting login with:", formData.email);
             const response = await userLogin(formData.email, formData.password);
             console.log("Login response:", response);
             if (response.success && response.data) {
                 window.dispatchEvent(new Event("storage"));
                 const userData = (response.data as any).data;
-                console.log(userData.isAdmin);
+                console.log("User data:", userData);
                 if (userData.isAdmin) {
                     window.location.href = "/admin";
                 } else {
                     window.location.href = "/";
                 }
             } else {
+                console.error("Login failed:", response.message);
                 setError(response.message || "Login failed");
             }
         } catch (err) {
+            console.error("Login error:", err);
             setError("An error occurred during login");
         } finally {
             setLoading(false);
         }
+    };
+
+    // Handle Google sign-in button click handle this piece of sh
+    const handleGoogleSignIn = () => {
+        const googleAuthUrl = `${baseUrl}/api/users/auth/google`;
+        console.log('Redirecting to Google auth URL:', googleAuthUrl);
+        window.location.href = googleAuthUrl;
     };
 
     return (
@@ -124,12 +147,12 @@ export default function Login() {
                                             {loading ? 'Signing in...' : 'Sign in'}
                                         </button>
                                         <div className="separator-text">or</div>
-                                        <button
+                                        <button 
                                             type="button"
-                                            // onClick={handleGoogleSignIn} 
+                                            onClick={handleGoogleSignIn}
                                             className="oauth-button"
                                         >
-                                            <img src="https://lh3.googleusercontent.com/COxitqgJr1sJnIDe8-jiKhxDx1FrYbtRHKJ9z_hELisAlapwE9LUPh6fcXIfb5vwpbMl4xl9H9TRFPc5NOO8Sb3VSgIBrfRYvW6cUA" alt="Google Logo" />
+                                            <img src="/google-icon.png" alt="Google" />
                                             Continue with Google
                                         </button>
                                         <p className="text-sm font-light text-gray-500 dark:text-gray-400">

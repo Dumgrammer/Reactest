@@ -4,11 +4,25 @@ const app = express();
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 const parser = require('body-parser');
+const passport = require('./config/passportConfig');
+const session = require('express-session');
 
 app.use(morgan('dev'));
 app.use('/uploads', express.static('uploads'));
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
+
+// Initialize session middleware
+app.use(session({ 
+    secret: process.env.SESSION_SECRET || 'keyboard cat',
+    resave: false, 
+    saveUninitialized: false,
+    cookie: { secure: process.env.NODE_ENV === 'production' }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*"),

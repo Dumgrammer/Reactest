@@ -25,7 +25,10 @@ const productSchema = mongoose.Schema({
     numReview: { type: Number, required: true, default: 0 },
     price: { type: Number, required: true, default: 0 },
     inventory: [inventoryItemSchema],
-    countInStock: { type: Number, required: true, default: 0 } // Keep for backward compatibility
+    countInStock: { type: Number, required: true, default: 0 },
+    isNotArchived: {type: Boolean, default: 1} 
+    //0 means archived
+    // Keep for backward compatibility
 }, { timestamps: true });
 
 // Add a virtual to calculate total stock across all inventory items

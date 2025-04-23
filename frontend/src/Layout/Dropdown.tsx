@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { userLogoutAction } from "../Actions/User";
+import { userLogout } from "../Actions/User";
 import { Link } from "react-router-dom";
 
 export default function Dropdown() {
@@ -8,7 +8,7 @@ export default function Dropdown() {
   const userInfo = JSON.parse(localStorage.getItem("userInfo") || "null");
 
   const handleLogout = () => {
-    userLogoutAction();
+    userLogout();
     setIsOpen(false);
   };
 

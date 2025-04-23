@@ -4,7 +4,8 @@ const send = require('../utils/Response');
 
 exports.getProduct = async (req, res) => {
     try {
-        const products = await Product.find({});
+        // Only get products that are not archived (isNotArchived=1)
+        const products = await Product.find({ isNotArchived: 1 });
 
         const updatedProducts = products.map(product => {
             const updatedImages = product.image.map(img => {
@@ -27,7 +28,7 @@ exports.searchProduct = async (req, res) => {
         const { name, category } = req.query;
         
         // Build search query
-        let searchQuery = {};
+        let searchQuery = { isNotArchived: 1 }; // Only non-archived products
         
         // Search by name (case insensitive)
         if (name) {
@@ -61,7 +62,7 @@ exports.searchProduct = async (req, res) => {
 exports.getSpecificProduct = async (req, res) => {
     try {
         const id = req.params.id;
-        const product = await Product.findById(id);
+        const product = await Product.findOne({ _id: id, isNotArchived: 1 });
 
         if (!product) {
             return send.sendNotFoundResponse(res, "Product Not Found!");
@@ -142,7 +143,8 @@ exports.createProduct = async (req, res) => {
             numReview: Number(numReview) || 0,
             price: Number(price) || 0,
             inventory: inventoryItems,
-            countInStock: totalStock // Set countInStock to total for backward compatibility
+            countInStock: totalStock, // Set countInStock to total for backward compatibility
+            isNotArchived: 1 // Set as active by default
         });
 
         const newProduct = await product.save();
@@ -236,8 +238,8 @@ exports.updateProduct = async (req, res) => {
                 name,
                 description,
                 type: types,
-                rating: Number(rating),
-                numReview: Number(numReview),
+                rating: Number(rating) || 5,
+                numReview: Number(numReview) || 50,
                 price: Number(price),
                 category,
                 size: sizes,
@@ -274,10 +276,37 @@ exports.deleteProduct = async (req, res) => {
             return send.sendNotFoundResponse(res, "Product not found!");
         }
 
-        const deletedProduct = await Product.deleteOne({ _id: id });
+        // Update isNotArchived to 0 instead of deleting
+        const archivedProduct = await Product.findByIdAndUpdate(
+            id,
+            { isNotArchived: 0 },
+            { new: true }
+        );
 
-        return send.sendResponse(res, 200, deletedProduct, "Product deleted successfully!");
+        return send.sendResponse(res, 200, archivedProduct, "Product archived successfully!");
 
+    } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};
+
+// Get all products for admin (including archived)
+exports.getAllProductsAdmin = async (req, res) => {
+    try {
+        // Get all products regardless of archive status
+        const products = await Product.find({});
+
+        const updatedProducts = products.map(product => {
+            const updatedImages = product.image.map(img => {
+                if (!img.startsWith("http")) {
+                    return `${req.protocol}://${req.get("host")}/${img.replace(/\\/g, "/")}`;
+                }
+                return img;
+            });
+            return { ...product.toObject(), image: updatedImages };
+        });
+
+        return send.sendResponse(res, 200, updatedProducts, "All products retrieved for admin!");
     } catch (error) {
         return send.sendISEResponse(res, error);
     }

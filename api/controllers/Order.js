@@ -166,3 +166,40 @@ exports.getUserOrderById = async (req, res) => {
     }
 };
 
+exports.updateOrderStatus = async (req, res) => {
+    try {
+        const { isPaid, isDelivered } = req.body;
+        const orderId = req.params.id;
+        
+        const order = await Order.findById(orderId);
+        
+        if (!order) {
+            return send.sendNotFoundResponse(res, "Order not found");
+        }
+        
+        // Update payment status if provided
+        if (isPaid !== undefined) {
+            order.isPaid = isPaid;
+            // If marking as paid, set the payment date
+            if (isPaid && !order.paidAt) {
+                order.paidAt = Date.now();
+            }
+        }
+        
+        // Update delivery status if provided
+        if (isDelivered !== undefined) {
+            order.isDelivered = isDelivered;
+            // If marking as delivered, set the delivery date
+            if (isDelivered && !order.deliveredAt) {
+                order.deliveredAt = Date.now();
+            }
+        }
+        
+        const updatedOrder = await order.save();
+        
+        return send.sendResponse(res, 200, updatedOrder, "Order status updated successfully");
+    } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};
+

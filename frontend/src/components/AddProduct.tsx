@@ -228,6 +228,9 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
                 setError("Product added successfully but couldn't refresh the list. Please reload the page.");
                 setLoading(false);
             }
+
+            onClose();
+
         } else {
             setError(response.message || "Failed to add product");
             setLoading(false);
@@ -235,6 +238,8 @@ const AddProductModal: React.FC<ModalProps> = ({ isOpen, onClose, onProductAdded
     } catch (error: any) {
         console.error("Error adding product:", error);
         setError(error.message || "Failed to add product");
+        setLoading(false);
+    } finally {
         setLoading(false);
     }
   };

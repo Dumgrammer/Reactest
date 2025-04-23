@@ -123,22 +123,30 @@ const sendVerificationEmail = async (email, verificationCode) => {
 //User Login
 exports.userLogin = async (req, res) => {
     try {
+        console.log("Login attempt for:", req.body.email);
         const { email, password } = req.body;
         
         const existingUser = await User.findOne({email: email});
+        console.log("User found:", existingUser ? "Yes" : "No");
 
         if (!existingUser) {
+            console.log("User not found");
             return send.sendNotFoundResponse(res, "Invalid Credential!");
         }
 
         // Check if user is verified
+        console.log("User verified:", existingUser.isVerified ? "Yes" : "No");
         if (!existingUser.isVerified) {
+            console.log("User not verified");
             return send.sendUnAuthResponse(res, "Please verify your email first!");
         }
 
+        //Boolean checks if the old and new password match
         const verifiedPassword = await argon2.verify(existingUser.password, password);
+        console.log("Password verified:", verifiedPassword ? "Yes" : "No");
 
         if(!verifiedPassword){
+            console.log("Invalid password");
             return send.sendUnAuthResponse(res, "Invalid Credentials!")
         }
         
@@ -150,10 +158,11 @@ exports.userLogin = async (req, res) => {
             token:  generateToken.generateToken(existingUser.id),
             createdAt: existingUser.createdAt
         }
-
+        console.log("Login successful for:", email);
         return send.sendResponse(res, 200, data, "Logged in successfully!")
 
     } catch (error) {
+        console.error("Login error:", error);
         return send.sendISEResponse(res, error)
     }
 };
@@ -376,6 +385,62 @@ exports.updateUserProfile = async (req, res) => {
     } catch (error) {
         console.error("Error Updating Profile:", error); // Debugging
         return send.sendBadRequestResponse(res, error.message || "Something went wrong");
+    }
+};
+
+// Google OAuth login
+exports.googleLogin = async (req, res) => {
+    try {
+        const { token, email, name, googleId } = req.body;
+        
+        if (!token || !email || !name || !googleId) {
+            return send.sendBadRequestResponse(res, "Missing required Google authentication data");
+        }
+        
+        // Check if user already exists
+        let user = await User.findOne({ email });
+        
+        if (!user) {
+            // Create new user if doesn't exist
+            // Extract first and last name from Google name
+            const nameParts = name.split(' ');
+            const firstname = nameParts[0];
+            const lastname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+            const middlename = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '';
+            
+            // Create random password for Google users (they'll login via Google, not password)
+            const randomPassword = Math.random().toString(36).slice(-10);
+            const hashedPassword = await argon2.hash(randomPassword);
+            
+            user = await User.create({
+                firstname,
+                middlename,
+                lastname,
+                email,
+                password: hashedPassword,
+                googleId,
+                isVerified: true // Google accounts are pre-verified
+            });
+        } else if (!user.googleId) {
+            // If user exists but doesn't have googleId, update it
+            user.googleId = googleId;
+            await user.save();
+        }
+        
+        const data = {
+            _id: user.id,
+            name: user.firstname + ' ' + user.middlename + ' ' + user.lastname,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            token: generateToken.generateToken(user.id),
+            createdAt: user.createdAt
+        }
+
+        return send.sendResponse(res, 200, data, "Google login successful!");
+        
+    } catch (error) {
+        console.error("Google Login Error:", error);
+        return send.sendISEResponse(res, error);
     }
 };
 

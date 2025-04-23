@@ -2,9 +2,18 @@ const mongoose = require('mongoose');
 const argon2 = require('argon2');
 
 const userSchema = new mongoose.Schema({
-    firstname: {type: String, required: true },
-    middlename: { type: String, required: true },
-    lastname: { type: String, required: true },
+    firstname: {
+        type: String,
+        required: true
+    },
+    middlename: {
+        type: String,
+        default: ''
+    },
+    lastname: {
+        type: String,
+        required: true
+    },
     email: {
         type: String,
         required: true,
@@ -19,11 +28,16 @@ const userSchema = new mongoose.Schema({
         street: { type: String, default: '' },
         city: { type: String, default: '' },
         postalCode: { type: String, default: '' },
-        country: { type: String, default: 'Philippines' }
+        country: { type: String, default: '' }
+    },
+    googleId: {
+        type: String,
+        default: null
     },
     isAdmin: {
         type: Boolean,
-        default: false 
+        required: true,
+        default: false
     },
     isVerified: {
         type: Boolean,
@@ -39,5 +53,7 @@ const userSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;
 

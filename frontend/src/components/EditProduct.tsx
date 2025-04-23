@@ -252,7 +252,9 @@ const EditProductModal: React.FC<ModalProps> = ({
       const response = await updateProductAction(product._id, formData);
       
       if (response.success) {
+        // Call onProductUpdated to trigger product list refresh in parent component
         onProductUpdated();
+        // Note: we don't need to set loading=false here because the component will unmount
       } else {
         setError(response.message || "Failed to update product");
         setLoading(false);

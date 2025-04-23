@@ -10,6 +10,7 @@ router.get('/:id', orderController.getSpecificOrders);
 router.post('/', orderController.orderProduct);
 
 router.put('/:id/payment', orderController.orderPayment);
+router.put('/:id/status', orderController.updateOrderStatus);
 
 router.get('/all', orderController.getAllOrders);
 router.get('/myorders/:id', orderController.getUserOrders);

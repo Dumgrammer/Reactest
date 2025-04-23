@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../Layout/AdminLayout";
-import { fetchOrders, OrderFilters, processOrders, updateOrderPayment } from "../Actions/Order";
+import { fetchOrders, OrderFilters, processOrders, updateOrderPayment, updateOrderStatus } from "../Actions/Order";
 import { Dialog, DialogPanel, DialogTitle, Description } from "@headlessui/react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 export default function OrdersList() {
-    const [orders, setOrders] = useState([]);
+    const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [statusUpdateError, setStatusUpdateError] = useState("");
     
     // Filters
     const [filters, setFilters] = useState<OrderFilters>({
@@ -111,6 +113,39 @@ export default function OrdersList() {
         if (!isPaid) return 'Unpaid';
         if (!isDelivered) return 'Pending Delivery';
         return 'Completed';
+    };
+
+    const handleStatusUpdate = async (order: any, field: 'isPaid' | 'isDelivered', value: boolean) => {
+        setUpdatingStatus(true);
+        setStatusUpdateError("");
+        
+        const statusType = field === 'isPaid' ? 'payment' : 'delivery';
+        const response = await updateOrderStatus(order._id, statusType, value);
+        
+        setUpdatingStatus(false);
+        
+        if (!response.success) {
+            setStatusUpdateError(response.message || "Failed to update order status");
+            return;
+        }
+        
+        // Update the selected order with new values
+        setSelectedOrder({
+            ...selectedOrder,
+            [field]: value,
+            ...(field === 'isPaid' && value && { paidAt: new Date().toISOString() }),
+            ...(field === 'isDelivered' && value && { deliveredAt: new Date().toISOString() })
+        });
+        
+        // Also update in the orders list
+        setOrders(orders.map((o: any) => 
+            o._id === order._id ? { 
+                ...o, 
+                [field]: value,
+                ...(field === 'isPaid' && value && { paidAt: new Date().toISOString() }),
+                ...(field === 'isDelivered' && value && { deliveredAt: new Date().toISOString() })
+            } : o
+        ));
     };
 
     return (
@@ -293,22 +328,77 @@ export default function OrdersList() {
                                             </div>
                                             <div>
                                                 <p className="text-sm text-gray-500">Payment Method: {selectedOrder.paymentMethod}</p>
-                                                <p className="text-sm text-gray-500">
-                                                    Payment Status: {selectedOrder.isPaid ? (
-                                                        <span className="text-green-600">Paid</span>
-                                                    ) : (
-                                                        <span className="text-red-600">Unpaid</span>
-                                                    )}
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                    Delivery Status: {selectedOrder.isDelivered ? (
-                                                        <span className="text-green-600">Delivered</span>
-                                                    ) : (
-                                                        <span className="text-yellow-600">Pending</span>
-                                                    )}
-                                                </p>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    {/* Status Management */}
+                                    <div className="border-t pt-4">
+                                        <h3 className="text-sm font-medium text-gray-500 mb-2">Status Management</h3>
+                                        
+                                        {statusUpdateError && (
+                                            <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md text-sm">
+                                                {statusUpdateError}
+                                            </div>
+                                        )}
+                                        
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {/* Payment Status */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Payment Status
+                                                </label>
+                                                <select
+                                                    value={selectedOrder.isPaid ? "paid" : "unpaid"}
+                                                    onChange={(e) => handleStatusUpdate(
+                                                        selectedOrder, 
+                                                        'isPaid', 
+                                                        e.target.value === "paid"
+                                                    )}
+                                                    disabled={updatingStatus}
+                                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                                >
+                                                    <option value="paid">Paid</option>
+                                                    <option value="unpaid">Unpaid</option>
+                                                </select>
+                                                {selectedOrder.paidAt && (
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        Paid on: {formatDate(selectedOrder.paidAt)}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            
+                                            {/* Delivery Status */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Delivery Status
+                                                </label>
+                                                <select
+                                                    value={selectedOrder.isDelivered ? "delivered" : "pending"}
+                                                    onChange={(e) => handleStatusUpdate(
+                                                        selectedOrder, 
+                                                        'isDelivered', 
+                                                        e.target.value === "delivered"
+                                                    )}
+                                                    disabled={updatingStatus}
+                                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                                >
+                                                    <option value="delivered">Delivered</option>
+                                                    <option value="pending">Pending</option>
+                                                </select>
+                                                {selectedOrder.deliveredAt && (
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        Delivered on: {formatDate(selectedOrder.deliveredAt)}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        
+                                        {updatingStatus && (
+                                            <div className="mt-2 flex justify-center">
+                                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Order Items */}
