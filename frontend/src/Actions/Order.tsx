@@ -91,6 +91,7 @@ export const createGcashCheckout = async (cart: any[], total: number) => {
             }
         });
 
+        localStorage.getItem("cartItems") && localStorage.removeItem("cartItems");
         return response.data;
     } catch (error: any) {
         console.error('PayMongo error:', error.response?.data);

@@ -280,11 +280,7 @@ function ProductDetail() {
                                                     }`}
                                                 >
                                                     {s}
-                                                    {inventoryItem && (
-                                                        <span className="absolute -top-2 -right-2 bg-gray-200 text-xs rounded-full px-1.5 py-0.5">
-                                                            {inventoryItem?.quantity ?? 0}
-                                                        </span>
-                                                    )}
+                                                    
                                                 </button>
                                             );
                                         })}
