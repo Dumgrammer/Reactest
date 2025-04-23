@@ -69,7 +69,7 @@ export const productDeleteAction = async (id: string) => {
 
 export const productRestoreAction = async (id: string) => {
     try {
-        const { data } = await axios.patch(`${baseUrl}/api/products/${id}`);
+        const { data } = await axios.patch(`${baseUrl}/api/products/restore/${id}`);
         return { success: true, product: data };
     } catch (error: any) {
         return { success: false, message: error.response?.data?.message || "Failed to fetch product details" };

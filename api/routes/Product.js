@@ -66,7 +66,7 @@ router.get('/:id', productController.getSpecificProduct);
 // Admin-only routes with logging
 router.post('/createproduct', upload.array('images', 5), productController.createProduct);
 router.patch('/:id', upload.array('images', 5), productController.updateProduct);
-router.patch('/:id', productController.restoreProduct);
+router.patch('/restore/:id', productController.restoreProduct);
 router.delete('/:id', productController.deleteProduct);
 
 

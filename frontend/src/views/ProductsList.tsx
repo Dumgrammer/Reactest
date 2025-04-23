@@ -191,56 +191,50 @@ export default function ProductsList() {
     };
 
     const handleProductDeletion = async (id: string) => {
-        if (deleteProductId) {
-            try {
-                const deleteResponse = await productDeleteAction(id);
-                if (!deleteResponse.success) {
-                    setError(deleteResponse.message);
-                    return;
-                }
-
-                setProducts((prevProducts) => {
-                    const updatedProducts = prevProducts.map((product) =>
-                        product._id === id ? { ...product, isNotArchived: false } : product
-                    );
-                    console.log("Updated Products:", updatedProducts);
-                    return updatedProducts;
-                });
-
-                setIsDeleteOpen(false);
-                setDeleteProductId(null);
-                setIsDeleteSuccessOpen(true);
-            } catch (error: any) {
-                setError(error.message || "Failed to archive product");
-                setIsDeleteOpen(false);
-                setIsFailedOpen(true);
+        try {
+            const deleteResponse = await productDeleteAction(id);
+            if (!deleteResponse.success) {
+                setError(deleteResponse.message);
+                return;
             }
+    
+            // Re-fetch products after archiving
+            const response = showArchived ? await fetchArchivedProducts() : await fetchProducts();
+            if (response.success) {
+                setProducts(response.products.data || response.products);
+            }
+    
+            setIsDeleteOpen(false);
+            setDeleteProductId(null);
+            setIsDeleteSuccessOpen(true);
+        } catch (error: any) {
+            setError(error.message || "Failed to archive product");
+            setIsDeleteOpen(false);
+            setIsFailedOpen(true);
         }
     };
 
     const handleProductRestore = async (id: string) => {
-        if (deleteProductId) {
-            try {
-                const restoreResponse = await productRestoreAction(id);
-                if (!restoreResponse.success) {
-                    setError(restoreResponse.message);
-                    return;
-                }
-
-                setProducts((prevProducts) =>
-                    prevProducts.map((product) =>
-                        product._id === id ? { ...product, isNotArchived: false } : product
-                    )
-                );
-
-                setIsDeleteOpen(false);
-                setDeleteProductId(null);
-                setIsDeleteSuccessOpen(true);
-            } catch (error: any) {
-                setError(error.message || "Failed to archive product");
-                setIsDeleteOpen(false);
-                setIsFailedOpen(true);
+        try {
+            const restoreResponse = await productRestoreAction(id);
+            if (!restoreResponse.success) {
+                setError(restoreResponse.message);
+                return;
             }
+    
+            // Re-fetch products after restoring
+            const response = showArchived ? await fetchArchivedProducts() : await fetchProducts();
+            if (response.success) {
+                setProducts(response.products.data || response.products);
+            }
+    
+            setIsRestoreOpen(false);
+            setRestoreProductId(null);
+            setIsRestoreSuccessOpen(true);
+        } catch (error: any) {
+            setError(error.message || "Failed to restore product");
+            setIsRestoreOpen(false);
+            setIsFailedOpen(true);
         }
     };
 
@@ -392,7 +386,7 @@ export default function ProductsList() {
                                                     ) : (
                                                         <button
                                                             onClick={() => handleOpenRestoreModal(product._id)}
-                                                            className="text-red-600 hover:text-red-900"
+                                                            className="text-green-600 hover:text-red-900"
                                                         >
                                                             Restore
                                                         </button>
@@ -489,6 +483,35 @@ export default function ProductsList() {
                                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                 >
                                     Archive
+                                </button>
+                            </div>
+                        </DialogPanel>
+                    </div>
+                </Dialog>
+                
+                {/* Restore Dialog */}
+                <Dialog open={isRestoreOpen} onClose={handleCloseRestoreModal} className="relative z-50">
+                    <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+                    <div className="fixed inset-0 flex items-center justify-center p-4">
+                        <DialogPanel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl">
+                            <DialogTitle className="text-xl font-semibold text-gray-900 mb-4">
+                                Restore Product
+                            </DialogTitle>
+                            <Description className="text-sm text-gray-500 mb-4">
+                                Are you sure you want to restore this product? It will no longer be visible to customers.
+                            </Description>
+                            <div className="mt-6 flex justify-end gap-3">
+                                <button
+                                    onClick={handleCloseRestoreModal}
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => handleProductRestore(restoreProductId!)}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                >
+                                    Restore
                                 </button>
                             </div>
                         </DialogPanel>
