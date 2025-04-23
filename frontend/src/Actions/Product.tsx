@@ -11,6 +11,16 @@ export const fetchProducts = async () => {
     }
 };
 
+export const fetchArchivedProducts = async () => {
+    try {
+        const { data } = await axios.get(`${baseUrl}/api/products/archive`);
+        return { success: true, products: data };
+    } catch (error: any) {
+        console.error("Archived product fetch error:", error);
+        return { success: false, message: error.response?.data?.message || "Failed to fetch archived products" };
+    }
+};
+
 export const productDetailAction = async (id: string) => {
     try {
         const { data } = await axios.get(`${baseUrl}/api/products/${id}`);
@@ -51,6 +61,15 @@ export const addProductAction = async (productData: FormData) => {
 export const productDeleteAction = async (id: string) => {
     try {
         const { data } = await axios.delete(`${baseUrl}/api/products/${id}`);
+        return { success: true, product: data };
+    } catch (error: any) {
+        return { success: false, message: error.response?.data?.message || "Failed to fetch product details" };
+    }
+};
+
+export const productRestoreAction = async (id: string) => {
+    try {
+        const { data } = await axios.patch(`${baseUrl}/api/products/${id}`);
         return { success: true, product: data };
     } catch (error: any) {
         return { success: false, message: error.response?.data?.message || "Failed to fetch product details" };

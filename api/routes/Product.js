@@ -59,16 +59,19 @@ const logAdminAction = (action) => (req, res, next) => {
 
 // Regular product routes
 router.get('/', productController.getProduct);
+router.get('/archive', productController.getArchiveProduct);
 router.get('/search', productController.searchProduct);
 router.get('/:id', productController.getSpecificProduct);
 
 // Admin-only routes with logging
 router.post('/createproduct', upload.array('images', 5), productController.createProduct);
 router.patch('/:id', upload.array('images', 5), productController.updateProduct);
+router.patch('/:id', productController.restoreProduct);
 router.delete('/:id', productController.deleteProduct);
 
+
 // Admin routes for all products and logs
-router.get('/admin/all', productController.getAllProductsAdmin);
+
 router.get('/admin/logs', (req, res) => {
     try {
         const logs = adminLogger.getAdminLogs();

@@ -429,10 +429,7 @@ export const fetchUserOrderById = async (orderId: string) => {
             throw new Error("Please login to view your order details");
         }
 
-        const { data } = await axios.get(`${baseUrl}/api/orders/myorders/${orderId}`, {
-            params: {
-                userId: userInfo.data._id
-            }
+        const { data } = await axios.get(`${baseUrl}/api/orders/myorders/${userInfo.data._id}/${orderId}`, {
         });
         
         return { 

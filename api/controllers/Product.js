@@ -23,6 +23,27 @@ exports.getProduct = async (req, res) => {
     }
 };
 
+exports.getArchiveProduct = async (req, res) => {
+    try {
+        // Only get products that are not archived (isNotArchived=1)
+        const products = await Product.find({ isNotArchived: 0 });
+
+        const updatedProducts = products.map(product => {
+            const updatedImages = product.image.map(img => {
+                if (!img.startsWith("http")) {
+                    return `${req.protocol}://${req.get("host")}/${img.replace(/\\/g, "/")}`;
+                }
+                return img;
+            });
+            return { ...product.toObject(), image: updatedImages };
+        });
+
+        return send.sendResponse(res, 200, updatedProducts, "Products found!");
+    } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};
+
 exports.searchProduct = async (req, res) => {
     try {
         const { name, category } = req.query;
@@ -290,23 +311,25 @@ exports.deleteProduct = async (req, res) => {
     }
 };
 
-// Get all products for admin (including archived)
-exports.getAllProductsAdmin = async (req, res) => {
+exports.restoreProduct = async (req, res) => {
     try {
-        // Get all products regardless of archive status
-        const products = await Product.find({});
+        const id = req.params.id;
 
-        const updatedProducts = products.map(product => {
-            const updatedImages = product.image.map(img => {
-                if (!img.startsWith("http")) {
-                    return `${req.protocol}://${req.get("host")}/${img.replace(/\\/g, "/")}`;
-                }
-                return img;
-            });
-            return { ...product.toObject(), image: updatedImages };
-        });
+        const existingProduct = await Product.findById(id);
+        
+        if (!existingProduct) {
+            return send.sendNotFoundResponse(res, "Product not found!");
+        }
 
-        return send.sendResponse(res, 200, updatedProducts, "All products retrieved for admin!");
+        // Update isNotArchived to 0 instead of deleting
+        const archivedProduct = await Product.findByIdAndUpdate(
+            id,
+            { isNotArchived: 1 },
+            { new: true }
+        );
+
+        return send.sendResponse(res, 200, archivedProduct, "Product archived successfully!");
+
     } catch (error) {
         return send.sendISEResponse(res, error);
     }

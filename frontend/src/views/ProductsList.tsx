@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "../Layout/AdminLayout";
 import AddProductModal from "../components/AddProduct";
 import EditProductModal from "../components/EditProduct";
-import { fetchAdminProducts, productDeleteAction, fetchAdminLogs, fetchProducts } from "../Actions/Product";
+import { fetchAdminProducts, productDeleteAction, fetchAdminLogs, fetchProducts, productRestoreAction, fetchArchivedProducts } from "../Actions/Product";
 import { Dialog, DialogPanel, DialogTitle, Description } from "@headlessui/react";
 import Success from "../components/modals/Success";
 import Failed from "../components/modals/Failed";
@@ -32,6 +32,8 @@ export default function ProductsList() {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+    const [isRestoreOpen, setIsRestoreOpen] = useState(false);
+    const [restoreProductId, setRestoreProductId] = useState<string | null>(null);
     const [showArchived, setShowArchived] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
     const [showLogs, setShowLogs] = useState(false);
@@ -40,7 +42,7 @@ export default function ProductsList() {
         const getProducts = async () => {
             setLoading(true);
             try {
-                const response = await fetchProducts();
+                const response = showArchived ? await fetchArchivedProducts() : await fetchProducts();
                 console.log("API Response:", response);
 
                 if (response.success) {
@@ -63,7 +65,7 @@ export default function ProductsList() {
         };
 
         getProducts();
-    }, []);
+    }, [showArchived]);
 
     // Fetch admin logs
     const loadAdminLogs = async () => {
@@ -86,6 +88,7 @@ export default function ProductsList() {
     const [isAddSuccessOpen, setIsAddSuccessOpen] = useState<boolean>(false);
     const [isEditSuccessOpen, setIsEditSuccessOpen] = useState<boolean>(false);
     const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState<boolean>(false);
+    const [isRestoreSuccessOpen, setIsRestoreSuccessOpen] = useState<boolean>(false);
     // Failed Modal
     const [isFailedOpen, setIsFailedOpen] = useState<boolean>(false);
 
@@ -113,10 +116,22 @@ export default function ProductsList() {
         setDeleteProductId(id);
         setIsDeleteOpen(true);
     };
+
     const handleCloseDeleteModal = () => {
         setDeleteProductId(null);
         setIsDeleteOpen(false);
     };
+
+    const handleOpenRestoreModal = (id: string) => {
+        setRestoreProductId(id);
+        setIsRestoreOpen(true);
+    };
+
+    const handleCloseRestoreModal = () => {
+        setRestoreProductId(null);
+        setIsRestoreOpen(false);
+    };
+
 
     const handleProductAdded = async () => {
         try {
@@ -183,13 +198,15 @@ export default function ProductsList() {
                     setError(deleteResponse.message);
                     return;
                 }
-    
-                setProducts((prevProducts) =>
-                    prevProducts.map((product) =>
+
+                setProducts((prevProducts) => {
+                    const updatedProducts = prevProducts.map((product) =>
                         product._id === id ? { ...product, isNotArchived: false } : product
-                    )
-                );
-    
+                    );
+                    console.log("Updated Products:", updatedProducts);
+                    return updatedProducts;
+                });
+
                 setIsDeleteOpen(false);
                 setDeleteProductId(null);
                 setIsDeleteSuccessOpen(true);
@@ -201,14 +218,33 @@ export default function ProductsList() {
         }
     };
 
-    // Filter products based on archived status
-    const filteredProducts = products.filter((product: any) => {
-        if (showArchived) {
-            return !product.isNotArchived; // Archived products
-        } else {
-            return product.isNotArchived; // Active products
+    const handleProductRestore = async (id: string) => {
+        if (deleteProductId) {
+            try {
+                const restoreResponse = await productRestoreAction(id);
+                if (!restoreResponse.success) {
+                    setError(restoreResponse.message);
+                    return;
+                }
+
+                setProducts((prevProducts) =>
+                    prevProducts.map((product) =>
+                        product._id === id ? { ...product, isNotArchived: false } : product
+                    )
+                );
+
+                setIsDeleteOpen(false);
+                setDeleteProductId(null);
+                setIsDeleteSuccessOpen(true);
+            } catch (error: any) {
+                setError(error.message || "Failed to archive product");
+                setIsDeleteOpen(false);
+                setIsFailedOpen(true);
+            }
         }
-    });
+    };
+
+    const filteredProducts = products;
 
     return (
         <AdminLayout>
@@ -230,7 +266,8 @@ export default function ProductsList() {
                         <button
                             type="button"
                             onClick={() => setShowArchived(!showArchived)}
-                            className={`flex items-center px-4 py-2 ${showArchived ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'} text-white rounded-lg transition-colors duration-200`}
+                            className={`flex items-center px-4 py-2 ${showArchived ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'
+                                } text-white rounded-lg transition-colors duration-200`}
                         >
                             {showArchived ? 'Show Active Products' : 'Show Archived Products'}
                         </button>
@@ -320,18 +357,18 @@ export default function ProductsList() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.countInStock > 100
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : product.countInStock >= 10
-                                                                ? 'bg-yellow-100 text-yellow-800'
-                                                                : 'bg-red-100 text-red-800'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : product.countInStock >= 10
+                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            : 'bg-red-100 text-red-800'
                                                         }`}>
                                                         {product.countInStock}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${product.isNotArchived
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-red-100 text-red-800'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-red-100 text-red-800'
                                                         }`}>
                                                         {product.isNotArchived ? 'Active' : 'Archived'}
                                                     </span>
@@ -353,7 +390,12 @@ export default function ProductsList() {
                                                             </button>
                                                         </>
                                                     ) : (
-                                                        <span className="text-gray-400">No actions available</span>
+                                                        <button
+                                                            onClick={() => handleOpenRestoreModal(product._id)}
+                                                            className="text-red-600 hover:text-red-900"
+                                                        >
+                                                            Restore
+                                                        </button>
                                                     )}
                                                 </td>
                                             </tr>
@@ -502,6 +544,20 @@ export default function ProductsList() {
                     message="There was an issue processing your request. Please try again"
                     buttonText="OK"
                     onConfirm={() => setIsFailedOpen(false)}
+                />
+
+                {/* Success Modal for Delete Product */}
+                <Success
+                    isOpen={isRestoreSuccessOpen}
+                    gif={
+                        <>
+                            <img className='mx-auto w-1/3 saturate-200' src="/trash.gif" />
+                        </>
+                    }
+                    title="Archive successful"
+                    message="Your product has been archived successfully"
+                    buttonText="Got it, thanks!"
+                    onConfirm={() => setIsRestoreSuccessOpen(false)}
                 />
 
             </div>
