@@ -79,7 +79,7 @@ function Product() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {products.length > 0 ? (
                                     products.map((product) => (
-                                        <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                                        <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col">
                                             <Link to={`/products/${product._id}`}>
                                                 <div className="relative aspect-square overflow-hidden">
                                                     <img
@@ -89,7 +89,7 @@ function Product() {
                                                     />
                                                 </div>
                                             </Link>
-                                            <div className="p-4">
+                                            <div className="p-4 flex flex-col h-full">  
                                                 <Link to={`/products/${product._id}`} className="block">
                                                     <h3 className="text-lg font-semibold mb-1 text-gray-800 hover:text-green-600">
                                                         {product.name}
@@ -113,7 +113,7 @@ function Product() {
                                                                 return (
                                                                     <span 
                                                                         key={index} 
-                                                                        className={`inline-block text-xs px-2 py-1 rounded relative
+                                                                        className={`inline-block text-xs px-2 py-1 rounded relative mb-3
                                                                             ${isAvailable 
                                                                                 ? 'bg-green-100 text-green-800'
                                                                                 : 'bg-gray-100 text-gray-500'
@@ -128,7 +128,7 @@ function Product() {
                                                     </div>
                                                 )}
                                                 
-                                                <Link to={`/products/${product._id}`} className="block mt-3">
+                                                <Link to={`/products/${product._id}`} className="block mt-auto">
                                                     <button className="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md transition-colors duration-200 text-sm">
                                                         View Details
                                                     </button>
