@@ -15,10 +15,12 @@ export default function Sidenav() {
                <path clip-rule="evenodd" fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
             </svg>
          </button>
-        <div className="flex ms-2 md:me-24">
-          <img src="/Campus_Cart.png" className="h-8 me-3 mt-[0.5rem]" alt="FlowBite Logo" />
-          <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">GC Coop</span>
-        </div>
+         <Link to="/">
+          <div className="flex items-center space-x-3 rtl:space-x-reverse">
+            <img src="/Campus_Cart.png" className="h-8 mt-2" alt="Campus Cart Logo" />
+            <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">GC Coop</span>
+          </div>
+        </Link>
       </div>
       <div className="flex items-center">
           <div className="flex items-center ms-3">
