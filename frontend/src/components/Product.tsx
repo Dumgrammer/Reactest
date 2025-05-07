@@ -97,7 +97,7 @@ function Product() {
                                                 </Link>
                                                 <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>
                                                 <div className="flex justify-between items-baseline">
-                                                    <span className="text-green-600 font-bold">${product.price.toFixed(2)}</span>
+                                                    <span className="text-green-600 font-bold">₱{product.price.toFixed(2)}</span>
                                                     {getStockStatusDisplay(product.countInStock)}
                                                 </div>
                                                 
