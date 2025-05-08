@@ -100,21 +100,33 @@ const setAuthToken = (token: string) => {
 export const userLogin = async (email: string, password: string): Promise<ApiResponse> => {
     try {
         const { data } = await axios.post(`${baseUrl}/api/users/login`, { email, password });
+        console.log("Raw login response:", data); // Debug log
 
-        if (data.success) {
+        if (data.success && data.data) {
             // Only store user info in localStorage if user is verified
-            if (data.data && data.data.isVerified !== false) {
+            if (data.data.isVerified !== false) {
                 localStorage.setItem('userInfo', JSON.stringify(data));
+                setAuthToken(data.data.token);
             }
+            return {
+                success: true,
+                message: "Login successful",
+                data: data.data
+            };
         }
 
-        return data;
+        return {
+            success: false,
+            message: data.message || "Login failed",
+            data: data.data || null
+        };
     } catch (error: any) {
+        console.error("Login error:", error);
         const responseData = error.response?.data;
         return {
             success: false,
             message: responseData?.message || 'An error occurred during login',
-            data: responseData // Include additional data like email and isVerified
+            data: responseData || null
         };
     }
 };

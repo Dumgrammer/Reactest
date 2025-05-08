@@ -1,5 +1,5 @@
-const { where, findById, updateOne } = require('../models/Order');
 const Product = require('../models/Product');
+const Logs = require('../models/Logs');
 const send = require('../utils/Response');
 
 exports.getProduct = async (req, res) => {
@@ -106,7 +106,12 @@ exports.getSpecificProduct = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
     try {
-        const { name, description, type, rating, numReview, price, category, inventory } = req.body;
+        const { name, description, type, rating, numReview, price, category, inventory, userId, userInfo } = req.body;
+
+        if (!userId) {
+            console.error("Authentication error: No userId provided");
+            return send.sendResponse(res, 401, null, "Authentication required");
+        }
 
         // Check for images
         if (!req.files || req.files.length === 0) {
@@ -170,6 +175,29 @@ exports.createProduct = async (req, res) => {
 
         const newProduct = await product.save();
         
+        // Create log entry for product creation
+        try {
+            const userData = JSON.parse(userInfo || '{}').data || {};
+
+            const logData = {
+                user: userId,
+                action: 'create',
+                reason: 'New product created',
+                productId: newProduct._id,
+                userDetails: {
+                    fullName: userData.name,
+                    email: userData.email
+                }
+            };
+
+            console.log("Creating log with data:", logData);
+            const log = new Logs(logData);
+            const savedLog = await log.save();
+            console.log("Log created successfully:", savedLog);
+        } catch (logError) {
+            console.error("Error creating product log:", logError);
+        }
+        
         // Format the response to include full image URLs
         const formattedProduct = {
             ...newProduct.toObject(),
@@ -196,7 +224,7 @@ exports.updateProduct = async (req, res) => {
         }
 
         // Get the basic fields
-        const { name, description, type, rating, numReview, price, category, inventory } = req.body;
+        const { name, description, type, rating, numReview, price, category, inventory, userId } = req.body;
         
         // Handle arrays for type and size
         const types = Array.isArray(type) ? type : [type];
@@ -271,6 +299,28 @@ exports.updateProduct = async (req, res) => {
             { new: true }
         );
 
+        // Create log entry for update
+        try {
+            const userInfo = JSON.parse(req.body.userInfo || '{}');
+            const userData = userInfo.data || {};
+
+            const logData = {
+                user: userId,
+                action: 'update',
+                reason: 'Product updated',
+                productId: id,
+                userDetails: {
+                    fullName: userData.name,
+                    email: userData.email
+                }
+            };
+
+            const log = new Logs(logData);
+            await log.save();
+        } catch (logError) {
+            console.error("Error creating update log:", logError);
+        }
+
         // Format image URLs in the response
         const formattedProduct = {
             ...updatedProduct.toObject(),
@@ -290,6 +340,16 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
     try {
         const id = req.params.id;
+        const { reason, userId } = req.body;
+
+        if (!reason) {
+            return send.sendResponse(res, 400, null, "Reason is required for archiving a product");
+        }
+
+        if (!userId) {
+            console.error("Authentication error: No userId provided");
+            return send.sendResponse(res, 401, null, "Authentication required");
+        }
 
         const existingProduct = await Product.findById(id);
         
@@ -304,9 +364,43 @@ exports.deleteProduct = async (req, res) => {
             { new: true }
         );
 
+        if (!archivedProduct) {
+            return send.sendResponse(res, 500, null, "Failed to archive product");
+        }
+
+        try {
+            // Get user details from the request body
+            const userInfo = JSON.parse(req.body.userInfo || '{}');
+            const userData = userInfo.data || {};
+
+            console.log("This is the user data", userData);
+
+            // Create log entry with user details
+            const logData = {
+                user: userId,
+                action: 'archive',
+                reason: reason,
+                productId: id,
+                userDetails: {
+                    fullName: userData.name,
+                    email: userData.email
+                }
+            };
+
+            console.log("Creating log with data:", logData);
+
+            const log = new Logs(logData);
+            const savedLog = await log.save();
+            console.log("Log created successfully:", savedLog);
+        } catch (logError) {
+            console.error("Error creating log:", logError);
+            // Continue with the response even if logging fails
+        }
+
         return send.sendResponse(res, 200, archivedProduct, "Product archived successfully!");
 
     } catch (error) {
+        console.error("Error in deleteProduct:", error);
         return send.sendISEResponse(res, error);
     }
 };
@@ -314,6 +408,16 @@ exports.deleteProduct = async (req, res) => {
 exports.restoreProduct = async (req, res) => {
     try {
         const id = req.params.id;
+        const { userId, reason } = req.body;
+
+        if (!userId) {
+            console.error("Authentication error: No userId provided");
+            return send.sendResponse(res, 401, null, "Authentication required");
+        }
+
+        if (!reason) {
+            return send.sendResponse(res, 400, null, "Reason is required for restoring a product");
+        }
 
         const existingProduct = await Product.findById(id);
         
@@ -321,14 +425,36 @@ exports.restoreProduct = async (req, res) => {
             return send.sendNotFoundResponse(res, "Product not found!");
         }
 
-        // Update isNotArchived to 0 instead of deleting
-        const archivedProduct = await Product.findByIdAndUpdate(
+        // Update isNotArchived to 1
+        const restoredProduct = await Product.findByIdAndUpdate(
             id,
             { isNotArchived: 1 },
             { new: true }
         );
 
-        return send.sendResponse(res, 200, archivedProduct, "Product archived successfully!");
+        // Create log entry for restore
+        try {
+            const userInfo = JSON.parse(req.body.userInfo || '{}');
+            const userData = userInfo.data || {};
+
+            const logData = {
+                user: userId,
+                action: 'restore',
+                reason: reason,
+                productId: id,
+                userDetails: {
+                    fullName: userData.name,
+                    email: userData.email
+                }
+            };
+
+            const log = new Logs(logData);
+            await log.save();
+        } catch (logError) {
+            console.error("Error creating restore log:", logError);
+        }
+
+        return send.sendResponse(res, 200, restoredProduct, "Product restored successfully!");
 
     } catch (error) {
         return send.sendISEResponse(res, error);

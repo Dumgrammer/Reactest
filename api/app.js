@@ -51,6 +51,7 @@ const databaseSeeder = require('./seeder');
 const userRoutes = require('./routes/User');
 const productRoutes = require('./routes/Product');
 const orderRoutes = require('./routes/Order');
+const logsRoutes = require('./routes/Logs');
 
 app.use('/api/seed', databaseSeeder);
 
@@ -61,6 +62,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 //URL Path for Orders
 app.use('/api/orders', orderRoutes);
+
+//URL Path for Logs
+app.use('/api/logs', logsRoutes);
 
 //paypal integration
 app.use('/api/config/paypal', (req, res) => {

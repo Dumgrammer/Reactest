@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "../Layout/AdminLayout";
 import AddProductModal from "../components/AddProduct";
 import EditProductModal from "../components/EditProduct";
-import { fetchAdminProducts, productDeleteAction, fetchAdminLogs, fetchProducts, productRestoreAction, fetchArchivedProducts } from "../Actions/Product";
+import { fetchAdminProducts, productDeleteAction, fetchProducts, productRestoreAction, fetchArchivedProducts, fetchLogs } from "../Actions/Product";
 import { Dialog, DialogPanel, DialogTitle, Description } from "@headlessui/react";
 import Success from "../components/modals/Success";
 import Failed from "../components/modals/Failed";
@@ -26,6 +26,22 @@ interface ProductType {
     isNotArchived?: boolean;
 }
 
+interface LogType {
+    _id: string;
+    user: {
+        firstname: string;
+        middlename?: string;
+        lastname: string;
+        email: string;
+    };
+    action: string;
+    reason: string;
+    productId: {
+        name: string;
+    };
+    createdAt: string;
+}
+
 export default function ProductsList() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -35,15 +51,17 @@ export default function ProductsList() {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
+    const [archiveReason, setArchiveReason] = useState("");
     const [isRestoreOpen, setIsRestoreOpen] = useState(false);
     const [restoreProductId, setRestoreProductId] = useState<string | null>(null);
+    const [restoreReason, setRestoreReason] = useState("");
     const [showArchived, setShowArchived] = useState(false);
-    const [logs, setLogs] = useState<string[]>([]);
-    const [showLogs, setShowLogs] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
     const [sortField, setSortField] = useState<string>('createdAt');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [logs, setLogs] = useState<LogType[]>([]);
+    const [showLogs, setShowLogs] = useState(false);
 
     useEffect(() => {
         const getProducts = async () => {
@@ -74,22 +92,22 @@ export default function ProductsList() {
         getProducts();
     }, [showArchived]);
 
-    // Fetch admin logs
-    const loadAdminLogs = async () => {
-        try {
-            const response = await fetchAdminLogs();
-            if (response.success) {
-                setLogs(response.logs);
-                setShowLogs(true);
-            } else {
-                setError(response.message || 'Failed to fetch admin logs');
-                setIsFailedOpen(true);
+    useEffect(() => {
+        const getLogs = async () => {
+            try {
+                const response = await fetchLogs();
+                if (response.success) {
+                    setLogs(response.logs.data || response.logs);
+                }
+            } catch (error) {
+                console.error("Error fetching logs:", error);
             }
-        } catch (error: any) {
-            setError(error.message || 'Failed to fetch admin logs');
-            setIsFailedOpen(true);
+        };
+
+        if (showLogs) {
+            getLogs();
         }
-    };
+    }, [showLogs]);
 
     // Success Modals
     const [isAddSuccessOpen, setIsAddSuccessOpen] = useState<boolean>(false);
@@ -121,21 +139,25 @@ export default function ProductsList() {
     // Delete Confirmation Modal
     const handleOpenDeleteModal = (id: string) => {
         setDeleteProductId(id);
+        setArchiveReason(""); // Reset reason when opening modal
         setIsDeleteOpen(true);
     };
 
     const handleCloseDeleteModal = () => {
         setDeleteProductId(null);
+        setArchiveReason(""); // Reset reason when closing modal
         setIsDeleteOpen(false);
     };
 
     const handleOpenRestoreModal = (id: string) => {
         setRestoreProductId(id);
+        setRestoreReason(""); // Reset reason when opening modal
         setIsRestoreOpen(true);
     };
 
     const handleCloseRestoreModal = () => {
         setRestoreProductId(null);
+        setRestoreReason(""); // Reset reason when closing modal
         setIsRestoreOpen(false);
     };
 
@@ -198,32 +220,52 @@ export default function ProductsList() {
     };
 
     const handleProductDeletion = async (id: string) => {
+        if (!archiveReason) {
+            setError("Please provide a reason for archiving the product");
+            return;
+        }
+
         try {
-            const deleteResponse = await productDeleteAction(id);
-            if (!deleteResponse.success) {
-                setError(deleteResponse.message);
-                return;
+            const deleteResponse = await productDeleteAction(id, archiveReason);
+            if (deleteResponse.success) {
+                setIsDeleteSuccessOpen(true);
+                setIsDeleteOpen(false);
+                setArchiveReason("");
+                // Refresh the product list
+                if (showArchived) {
+                    const response = await fetchArchivedProducts();
+                    if (response.success) {
+                        setProducts(response.products.data || response.products || []);
+                    }
+                } else {
+                    const response = await fetchProducts();
+                    if (response.success) {
+                        setProducts(response.products.data || response.products || []);
+                    }
+                }
+            } else {
+                if (deleteResponse.message === "User authentication required" || deleteResponse.message === "Invalid user data") {
+                    setError("Your session has expired. Please log in again.");
+                } else {
+                    setError(deleteResponse.message || "Failed to archive product");
+                }
+                setIsFailedOpen(true);
             }
-
-            // Re-fetch products after archiving
-            const response = showArchived ? await fetchArchivedProducts() : await fetchProducts();
-            if (response.success) {
-                setProducts(response.products.data || response.products);
-            }
-
-            setIsDeleteOpen(false);
-            setDeleteProductId(null);
-            setIsDeleteSuccessOpen(true);
         } catch (error: any) {
-            setError(error.message || "Failed to archive product");
-            setIsDeleteOpen(false);
+            console.error("Archive error:", error);
+            setError(error.response?.data?.message || "An error occurred while archiving the product");
             setIsFailedOpen(true);
         }
     };
 
     const handleProductRestore = async (id: string) => {
+        if (!restoreReason) {
+            setError("Please provide a reason for restoring the product");
+            return;
+        }
+
         try {
-            const restoreResponse = await productRestoreAction(id);
+            const restoreResponse = await productRestoreAction(id, restoreReason);
             if (!restoreResponse.success) {
                 setError(restoreResponse.message);
                 return;
@@ -237,6 +279,7 @@ export default function ProductsList() {
 
             setIsRestoreOpen(false);
             setRestoreProductId(null);
+            setRestoreReason("");
             setIsRestoreSuccessOpen(true);
         } catch (error: any) {
             setError(error.message || "Failed to restore product");
@@ -245,7 +288,8 @@ export default function ProductsList() {
         }
     };
 
-    const filteredProducts = products;
+    // Ensure products is always an array
+    const filteredProducts = Array.isArray(products) ? products : [];
 
     // Add sorting logic
     const handleSort = (field: string) => {
@@ -288,6 +332,16 @@ export default function ProductsList() {
         setCurrentPage(pageNumber);
     };
 
+    const handleShowArchived = () => {
+        setShowLogs(false); // Turn off logs view when showing archived
+        setShowArchived(!showArchived);
+    };
+
+    const handleShowLogs = () => {
+        setShowArchived(false); // Turn off archived view when showing logs
+        setShowLogs(!showLogs);
+    };
+
     return (
         <AdminLayout>
             <div className="px-6 py-4">
@@ -297,23 +351,19 @@ export default function ProductsList() {
                     <div className="flex gap-2">
                         <button
                             type="button"
-                            onClick={loadAdminLogs}
-                            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
-                        >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            View Logs
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setShowArchived(!showArchived)}
-                            className={`flex items-center px-4 py-2 ${showArchived ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'
-                                } text-white rounded-lg transition-colors duration-200`}
+                            onClick={handleShowArchived}
+                            className={`flex items-center px-4 py-2 ${showArchived ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'} text-white rounded-lg transition-colors duration-200`}
                         >
                             {showArchived ? 'Show Active Products' : 'Show Archived Products'}
                         </button>
-                        {!showArchived && (
+                        <button
+                            type="button"
+                            onClick={handleShowLogs}
+                            className={`flex items-center px-4 py-2 ${showLogs ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'} text-white rounded-lg transition-colors duration-200`}
+                        >
+                            {showLogs ? 'Show Products' : 'Show Logs'}
+                        </button>
+                        {!showArchived && !showLogs && (
                             <button
                                 type="button"
                                 onClick={handleOpenModal}
@@ -363,6 +413,57 @@ export default function ProductsList() {
                                 </svg>
                                 <p className="mt-2 text-red-600">{error}</p>
                             </div>
+                        </div>
+                    ) : showLogs ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="bg-gray-50 border-b">
+                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {logs.map((log) => (
+                                        <tr key={log._id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm text-gray-900">
+                                                    {`${log.user.firstname} ${log.user.middlename ? log.user.middlename + ' ' : ''}${log.user.lastname}`}
+                                                </div>
+                                                <div className="text-sm text-gray-500">{log.user.email}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                    log.action === 'archive' ? 'bg-red-100 text-red-800' :
+                                                    log.action === 'restore' ? 'bg-green-100 text-green-800' :
+                                                    'bg-blue-100 text-blue-800'
+                                                }`}>
+                                                    {log.action}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {log.productId.name}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-900">
+                                                {log.reason}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {new Date(log.createdAt).toLocaleString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: 'numeric',
+                                                    minute: 'numeric',
+                                                    hour12: true
+                                                })}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     ) : (
                         <>
@@ -607,42 +708,6 @@ export default function ProductsList() {
                     )}
                 </div>
 
-                {/* Admin Logs Modal */}
-                <Dialog open={showLogs} onClose={() => setShowLogs(false)} className="relative z-50">
-                    <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-                    <div className="fixed inset-0 flex items-center justify-center p-4">
-                        <DialogPanel className="mx-auto max-w-3xl w-full rounded-lg bg-white p-6 shadow-xl max-h-[80vh] overflow-y-auto">
-                            <DialogTitle className="text-xl font-semibold text-gray-900 mb-4">
-                                Admin Activity Logs
-                            </DialogTitle>
-                            <div className="mb-4">
-                                <p className="text-sm text-gray-500">All administrative actions are logged here for accountability.</p>
-                            </div>
-                            <div className="bg-gray-50 p-4 rounded-lg max-h-[60vh] overflow-y-auto">
-                                {logs.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {logs.map((log, index) => (
-                                            <div key={index} className="text-xs bg-white p-3 rounded border border-gray-200">
-                                                {log}
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-center text-gray-500 py-8">No logs available.</p>
-                                )}
-                            </div>
-                            <div className="mt-6 flex justify-end">
-                                <button
-                                    onClick={() => setShowLogs(false)}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        </DialogPanel>
-                    </div>
-                </Dialog>
-
                 {/* Add Modal */}
                 <AddProductModal
                     isOpen={isModalOpen}
@@ -671,6 +736,20 @@ export default function ProductsList() {
                             <Description className="text-sm text-gray-500 mb-4">
                                 Are you sure you want to archive this product? It will no longer be visible to customers.
                             </Description>
+                            <div className="mb-4">
+                                <label htmlFor="archiveReason" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Reason for archiving
+                                </label>
+                                <textarea
+                                    id="archiveReason"
+                                    rows={3}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                    placeholder="Please provide a reason for archiving this product..."
+                                    value={archiveReason}
+                                    onChange={(e) => setArchiveReason(e.target.value)}
+                                    required
+                                />
+                            </div>
                             <div className="mt-6 flex justify-end gap-3">
                                 <button
                                     onClick={handleCloseDeleteModal}
@@ -680,7 +759,8 @@ export default function ProductsList() {
                                 </button>
                                 <button
                                     onClick={() => handleProductDeletion(deleteProductId!)}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                    disabled={!archiveReason.trim()}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Archive
                                 </button>
@@ -698,8 +778,22 @@ export default function ProductsList() {
                                 Restore Product
                             </DialogTitle>
                             <Description className="text-sm text-gray-500 mb-4">
-                                Are you sure you want to restore this product? It will no longer be visible to customers.
+                                Are you sure you want to restore this product? It will be visible to customers again.
                             </Description>
+                            <div className="mb-4">
+                                <label htmlFor="restoreReason" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Reason for restoring
+                                </label>
+                                <textarea
+                                    id="restoreReason"
+                                    rows={3}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                    placeholder="Please provide a reason for restoring this product..."
+                                    value={restoreReason}
+                                    onChange={(e) => setRestoreReason(e.target.value)}
+                                    required
+                                />
+                            </div>
                             <div className="mt-6 flex justify-end gap-3">
                                 <button
                                     onClick={handleCloseRestoreModal}
@@ -709,7 +803,8 @@ export default function ProductsList() {
                                 </button>
                                 <button
                                     onClick={() => handleProductRestore(restoreProductId!)}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                                    disabled={!restoreReason.trim()}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Restore
                                 </button>

@@ -30,15 +30,29 @@ export const productDetailAction = async (id: string) => {
     }
 };
 
-
 export const addProductAction = async (productData: FormData) => {
     try {
+        const userInfoStr = localStorage.getItem("userInfo");
+        if (!userInfoStr) {
+            return { success: false, message: "User authentication required" };
+        }
+
+        const userInfo = JSON.parse(userInfoStr);
+        if (!userInfo.data || !userInfo.data.token) {
+            return { success: false, message: "Invalid user data" };
+        }
+
+        // Add user info to FormData
+        productData.append('userId', userInfo.data._id);
+        productData.append('userInfo', userInfoStr);
+
         const { data } = await axios.post(
             `${baseUrl}/api/products/createproduct`,
             productData,
             {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${userInfo.data.token}`
                 }
             }
         );
@@ -58,21 +72,63 @@ export const addProductAction = async (productData: FormData) => {
     }
 };
 
-export const productDeleteAction = async (id: string) => {
+export const productDeleteAction = async (id: string, reason: string) => {
     try {
-        const { data } = await axios.delete(`${baseUrl}/api/products/${id}`);
+        const userInfoStr = localStorage.getItem("userInfo");
+        if (!userInfoStr) {
+            return { success: false, message: "User authentication required" };
+        }
+
+        const userInfo = JSON.parse(userInfoStr);
+        if (!userInfo.data || !userInfo.data.token) {
+            return { success: false, message: "Invalid user data" };
+        }
+
+        const { data } = await axios.delete(`${baseUrl}/api/products/${id}`, {
+            data: { 
+                reason,
+                userId: userInfo.data._id,
+                userInfo: userInfoStr
+            },
+            headers: {
+                Authorization: `Bearer ${userInfo.data.token}`
+            }
+        });
         return { success: true, product: data };
     } catch (error: any) {
-        return { success: false, message: error.response?.data?.message || "Failed to fetch product details" };
+        console.error("Archive error:", error);
+        return { success: false, message: error.response?.data?.message || "Failed to archive product" };
     }
 };
 
-export const productRestoreAction = async (id: string) => {
+export const productRestoreAction = async (id: string, reason: string) => {
     try {
-        const { data } = await axios.patch(`${baseUrl}/api/products/restore/${id}`);
+        const userInfoStr = localStorage.getItem("userInfo");
+        if (!userInfoStr) {
+            return { success: false, message: "User authentication required" };
+        }
+
+        const userInfo = JSON.parse(userInfoStr);
+        if (!userInfo.data || !userInfo.data.token) {
+            return { success: false, message: "Invalid user data" };
+        }
+
+        const { data } = await axios.patch(
+            `${baseUrl}/api/products/restore/${id}`,
+            { 
+                userId: userInfo.data._id,
+                userInfo: userInfoStr,
+                reason
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${userInfo.data.token}`
+                }
+            }
+        );
         return { success: true, product: data };
     } catch (error: any) {
-        return { success: false, message: error.response?.data?.message || "Failed to fetch product details" };
+        return { success: false, message: error.response?.data?.message || "Failed to restore product" };
     }
 };
 
@@ -95,12 +151,27 @@ export const searchProducts = async (query: string, category?: string) => {
 
 export const updateProductAction = async (id: string, productData: FormData) => {
     try {
+        const userInfoStr = localStorage.getItem("userInfo");
+        if (!userInfoStr) {
+            return { success: false, message: "User authentication required" };
+        }
+
+        const userInfo = JSON.parse(userInfoStr);
+        if (!userInfo.data || !userInfo.data.token) {
+            return { success: false, message: "Invalid user data" };
+        }
+
+        // Add user info to FormData
+        productData.append('userId', userInfo.data._id);
+        productData.append('userInfo', userInfoStr);
+
         const { data } = await axios.patch(
             `${baseUrl}/api/products/${id}`,
             productData,
             {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${userInfo.data.token}`
                 }
             }
         );
@@ -254,24 +325,12 @@ export const fetchAdminProducts = async () => {
     }
 };
 
-// Fetch admin activity logs
-export const fetchAdminLogs = async () => {
+export const fetchLogs = async () => {
     try {
-        const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-        const token = userInfo.data?.token;
-        
-        if (!token) {
-            return { success: false, message: "Admin authentication required" };
-        }
-
-        const { data } = await axios.get(`${baseUrl}/api/products/admin/logs`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        return { success: true, logs: data.data };
+        const { data } = await axios.get(`${baseUrl}/api/logs`);
+        return { success: true, logs: data };
     } catch (error: any) {
-        return { success: false, message: error.response?.data?.message || "Failed to fetch admin logs" };
+        return { success: false, message: error.response?.data?.message || "Failed to fetch logs" };
     }
 };
 

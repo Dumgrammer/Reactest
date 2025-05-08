@@ -62,19 +62,36 @@ function App() {
 
   useEffect(() => {
     const handleStorageChange = () => {
-      const storedUser = localStorage.getItem("userInfo");
-      setUserInfo(storedUser ? (JSON.parse(storedUser) as UserInfo) : null);
+      try {
+        const storedUser = localStorage.getItem("userInfo");
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser) as UserInfo;
+          setUserInfo(parsedUser);
+        } else {
+          setUserInfo(null);
+        }
+      } catch (error) {
+        console.error("Error handling storage change:", error);
+        setUserInfo(null);
+      }
     };
 
+    // Listen for storage events
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    
+    // Also listen for custom storage event
+    window.addEventListener("storage", handleStorageChange);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={userInfo ? <Navigate to="/" /> : <Login />} />
-        <Route path="/register" element={userInfo ? <Navigate to="/" /> : <Register />} />
+        <Route path="/login" element={userInfo ? <Navigate to="/" replace /> : <Login />} />
+        <Route path="/register" element={userInfo ? <Navigate to="/" replace /> : <Register />} />
         <Route path="/verify-code" element={<VerifyCode/>} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
         
@@ -90,7 +107,6 @@ function App() {
         <Route path="/admin" element={<AdminRoute><Admin/></AdminRoute>}></Route>
         <Route path="/admin/products" element={<AdminRoute><ProductsList/></AdminRoute>}></Route>
         <Route path="/admin/orders" element={<AdminRoute><OrdersList/></AdminRoute>}></Route>
-        
       </Routes>
     </Router>
   );

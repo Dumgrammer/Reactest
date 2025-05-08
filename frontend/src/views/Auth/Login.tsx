@@ -83,6 +83,7 @@ export default function Login() {
         
         setLoading(true);
         setError("");
+        setSnackbar({ open: false, message: "", type: "success" });
     
         try {
             console.log("Attempting login with:", formData.email);
@@ -90,55 +91,48 @@ export default function Login() {
             console.log("Login response:", response);
     
             if (response.success && response.data) {
-                const userData = (response.data as any).data;
-                console.log("This is user: ", userData)
                 // Check if the user's email is verified
-                if (!userData.isVerified) {
+                if (response.data.isVerified === false) {
                     localStorage.setItem('pendingVerification', formData.email);
                     navigate('/verify-code', { state: { email: formData.email } });
                     return;
                 }
     
                 // If verified, proceed with login
+                const userData = {
+                    data: response.data,
+                    success: true
+                };
+                localStorage.setItem('userInfo', JSON.stringify(userData));
+                
+                // Dispatch storage event first
                 window.dispatchEvent(new Event("storage"));
+                
+                // Show success message
                 setSnackbar({ open: true, message: "Login successful!", type: "success" });
 
-                // Use setTimeout to ensure the snackbar is shown before redirect
+                // Use a shorter timeout and use navigate instead of window.location
                 setTimeout(() => {
-                    if (userData.isAdmin) {
-                        window.location.href = "/admin";
+                    if (response.data.isAdmin) {
+                        navigate('/admin', { replace: true });
                     } else {
-                        window.location.href = "/";
+                        navigate('/', { replace: true });
                     }
-                }, 500);
-            } else if (response.data && response.data.isVerified === false) {
-                // Handle unverified user case - redirect to verification
+                }, 300);
+            } else if (response.message?.toLowerCase().includes("verify")) {
                 localStorage.setItem('pendingVerification', formData.email);
                 navigate('/verify-code', { state: { email: formData.email } });
-            } else if (response.message === "Please verify your email first!" && response.data?.email) {
-                // Redirect to verification page based on message
-                localStorage.setItem('pendingVerification', response.data.email);
-                navigate('/verify-code', { state: { email: response.data.email } });
             } else {
                 console.error("Login failed:", response.message);
-    
-                // Ensure response.message is a string
-                const errorMessage = typeof response.message === "string" ? response.message : "An error occurred.";
-                
-                // Check if error message is related to verification
-                if (errorMessage.toLowerCase().includes("verify")) {
-                    // If message contains "verify", redirect to verification with the email
-                    localStorage.setItem('pendingVerification', formData.email);
-                    navigate('/verify-code', { state: { email: formData.email } });
-                    return;
-                }
-                
+                const errorMessage = response.message || "An error occurred during login";
+                setError(errorMessage);
                 setSnackbar({ open: true, message: errorMessage, type: "error" });
             }
         } catch (err) {
             console.error("Login error:", err);
-            setError("An error occurred during login");
-            setSnackbar({ open: true, message: "An error occurred during login.", type: "error" });
+            const errorMessage = "An error occurred during login. Please try again.";
+            setError(errorMessage);
+            setSnackbar({ open: true, message: errorMessage, type: "error" });
         } finally {
             setLoading(false);
         }
