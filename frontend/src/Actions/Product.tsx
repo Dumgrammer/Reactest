@@ -334,3 +334,11 @@ export const fetchLogs = async () => {
     }
 };
 
+export const fetchStocksTotal = async () => {
+    try {
+        const { data } = await axios.get(`${baseUrl}/api/products/stocks/total`);
+        return { success: true, data: data.data };
+    } catch (error: any) {
+        return { success: false, message: error.response?.data?.message || "Failed to fetch stocks total" };
+    }
+};  

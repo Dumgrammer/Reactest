@@ -40,7 +40,7 @@ router.get('/', productController.getProduct);
 router.get('/archive', productController.getArchiveProduct);
 router.get('/search', productController.searchProduct);
 router.get('/:id', productController.getSpecificProduct);
-
+router.get('/stocks/total', productController.getStocksTotal);
 // Admin-only routes
 router.post('/createproduct', upload.array('images', 5), productController.createProduct);
 router.patch('/:id', upload.array('images', 5), productController.updateProduct);

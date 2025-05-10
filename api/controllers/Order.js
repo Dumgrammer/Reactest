@@ -203,3 +203,23 @@ exports.updateOrderStatus = async (req, res) => {
     }
 };
 
+
+exports.getGcashOrders = async (req, res) => {
+    try {
+        const orders = await Order.find({ paymentMethod: 'gcash' });
+        const totalPrice = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+        return send.sendResponse(res, 200, { totalPrice }, "Total GCash orders amount");
+    } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};
+
+exports.getCashOrders = async (req, res) => {
+    try {
+        const orders = await Order.find({ paymentMethod: 'pickup' });
+        const totalPrice = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+        return send.sendResponse(res, 200, { totalPrice }, "Total Cash orders amount");
+    } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};

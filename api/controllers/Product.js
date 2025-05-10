@@ -183,7 +183,7 @@ exports.createProduct = async (req, res) => {
                 user: userId,
                 action: 'create',
                 reason: 'New product created',
-                productId: newProduct._id,
+                productId: newProduct._id,  
                 userDetails: {
                     fullName: userData.name,
                     email: userData.email
@@ -456,6 +456,16 @@ exports.restoreProduct = async (req, res) => {
 
         return send.sendResponse(res, 200, restoredProduct, "Product restored successfully!");
 
+    } catch (error) {
+        return send.sendISEResponse(res, error);
+    }
+};
+
+exports.getStocksTotal = async (req, res) => {
+    try {
+        const stocks = await Product.find({});
+        const totalStocks = stocks.reduce((sum, product) => sum + (product.countInStock || 0), 0);
+        return send.sendResponse(res, 200, { totalStocks }, "Total number of stocks retrieved successfully");
     } catch (error) {
         return send.sendISEResponse(res, error);
     }

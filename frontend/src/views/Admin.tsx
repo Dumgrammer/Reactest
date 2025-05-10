@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import Card from "../components/Card";
 import AdminLayout from "../Layout/AdminLayout";
 import Statistics from "./Statistics";
-import { fetchOrders } from "../Actions/Order";
+import { fetchOrders, getGcashOrders, getCashOrders } from "../Actions/Order";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import axios from 'axios';
 
 interface StatCardProps {
     title: string;
@@ -40,9 +41,12 @@ const COLORS = ['#10b981', '#3b82f6'];
 export default function Admin() {
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [gcashTotal, setGcashTotal] = useState(0);
+    const [cashTotal, setCashTotal] = useState(0);
 
     useEffect(() => {
         fetchOrderData();
+        fetchPaymentTotals();
     }, []);
 
     const fetchOrderData = async () => {
@@ -51,6 +55,24 @@ export default function Admin() {
             setOrders(response.orders);
         }
         setLoading(false);
+    };
+
+    const fetchPaymentTotals = async () => {
+        try {
+            const [gcashResponse, cashResponse] = await Promise.all([
+                getGcashOrders(),
+                getCashOrders()
+            ]);
+            
+            if (gcashResponse.success) {
+                setGcashTotal(gcashResponse.data.totalPrice);
+            }
+            if (cashResponse.success) {
+                setCashTotal(cashResponse.data.totalPrice);
+            }
+        } catch (error) {
+            console.error('Error fetching payment totals:', error);
+        }
     };
 
     const getTotalRevenue = () => {
@@ -76,12 +98,12 @@ export default function Admin() {
 
     // Payment method distribution data
     const getPaymentMethodData = () => {
-        const cashOnPickup = orders.filter(order => order.paymentMethod === 'Cash on Pickup').length;
-        const gcash = orders.filter(order => order.paymentMethod === 'GCash').length;
+        const cashOnPickup = orders.filter(order => order.paymentMethod === 'pickup').length;
+        const gcash = orders.filter(order => order.paymentMethod === 'gcash').length;
 
         return [
-            { name: 'Cash on Pickup', value: cashOnPickup },
-            { name: 'GCash', value: gcash }
+            { name: 'Cash on Pickup', value: cashOnPickup, total: cashTotal },
+            { name: 'GCash', value: gcash, total: gcashTotal }
         ];
     };
 
@@ -92,7 +114,7 @@ export default function Admin() {
                 <p className="text-sm text-gray-600">This is all over Platform Sales Generated</p>
                 
                 {/* Top Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
                         title="Total Sales"
                         value={`₱${loading ? "..." : getTotalRevenue()}`}
@@ -123,21 +145,28 @@ export default function Admin() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {/* Revenue Trend */}
+                    <Card className="lg:col-span-2">
+                        <div className="p-4">
+                            <Statistics />
+                        </div>
+                    </Card>
+
                     {/* Payment Methods */}
-                    {/* <Card>
+                    <Card>
                         <div className="p-4">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-semibold text-gray-800">Payment Methods</h3>
                             </div>
-                            <div className="h-64">
+                            <div className="h-48 sm:h-64">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
                                             data={getPaymentMethodData()}
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={80}
+                                            innerRadius={40}
+                                            outerRadius={60}
                                             paddingAngle={5}
                                             dataKey="value"
                                         >
@@ -149,34 +178,30 @@ export default function Admin() {
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
-                            <div className="mt-4 space-y-4">
+                            <div className="mt-4 space-y-3">
                                 {getPaymentMethodData().map((entry, index) => (
-                                    <div key={entry.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div key={entry.name} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
                                         <div className="flex items-center">
-                                            <div className="w-10 h-10 rounded-full flex items-center justify-center"
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
                                                  style={{ backgroundColor: `${COLORS[index]}20`, color: COLORS[index] }}>
-                                                <i className={`fas ${index === 0 ? 'fa-money-bill' : 'fa-mobile-alt'} text-lg`}></i>
+                                                <i className={`fas ${index === 0 ? 'fa-money-bill' : 'fa-mobile-alt'} text-base sm:text-lg`}></i>
                                             </div>
-                                            <div className="ml-3">
-                                                <p className="text-sm font-medium text-gray-900">{entry.name}</p>
-                                                <p className="text-xs text-gray-500">{entry.value} orders</p>
+                                            <div className="ml-2 sm:ml-3">
+                                                <p className="text-xs sm:text-sm font-medium text-gray-900">{entry.name}</p>
+                                                <p className="text-[10px] sm:text-xs text-gray-500">{entry.value} orders</p>
                                             </div>
                                         </div>
-                                        <span className="text-sm font-medium text-gray-900">
-                                            ₱{orders.filter(o => o.paymentMethod === entry.name)
-                                                .reduce((sum, order) => sum + order.totalPrice, 0)
-                                                .toLocaleString()}
-                                        </span>
+                                        <div className="text-right">
+                                            <span className="text-xs sm:text-sm font-medium text-gray-900">
+                                                ₱{entry.total.toLocaleString()}
+                                            </span>
+                                            <p className="text-[10px] sm:text-xs text-gray-500">
+                                                {((entry.total / getTotalRevenue()) * 100).toFixed(1)}% of total
+                                            </p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    </Card> */}
-
-                    {/* Revenue Trend */}
-                    <Card className="lg:col-span-2">
-                        <div className="p-4">
-                            <Statistics />
                         </div>
                     </Card>
                 </div>

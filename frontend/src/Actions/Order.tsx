@@ -293,6 +293,9 @@ export const fetchOrders = async () => {
         };
 
         const { data } = await axios.get(`${baseUrl}/api/orders`, config);
+
+        console.log(data);
+
         return { 
             success: true, 
             orders: data.data 
@@ -482,5 +485,32 @@ export const updateOrderStatus = async (orderId: string, statusType: 'payment' |
         };
     }
 };
+
+// Get all gcash orders
+export const getGcashOrders = async () => {
+    try {
+        const response = await axios.get(`${baseUrl}/api/orders/totals/gcash`);
+        return response.data;
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to fetch gcash orders'
+        };
+    }
+};  
+
+// Get all cash orders
+export const getCashOrders = async () => {
+    try {
+        const response = await axios.get(`${baseUrl}/api/orders/totals/cash`);
+        return response.data;
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to fetch cash orders'
+        };
+    }
+};
+
 
 

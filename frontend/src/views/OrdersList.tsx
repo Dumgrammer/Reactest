@@ -13,6 +13,8 @@ export default function OrdersList() {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [updatingStatus, setUpdatingStatus] = useState(false);
     const [statusUpdateError, setStatusUpdateError] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const ordersPerPage = 12;
     
     // Filters
     const [filters, setFilters] = useState<OrderFilters>({
@@ -67,6 +69,12 @@ export default function OrdersList() {
     };
 
     const filteredOrders = processOrders(orders, filters);
+    
+    // Calculate pagination
+    const indexOfLastOrder = currentPage * ordersPerPage;
+    const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+    const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+    const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
     const handleViewDetails = (order: any) => {
         setSelectedOrder(order);
@@ -148,6 +156,10 @@ export default function OrdersList() {
         ));
     };
 
+    const handlePageChange = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+    };
+
     return (
         <AdminLayout>
             <div className="px-6 py-4">
@@ -224,75 +236,121 @@ export default function OrdersList() {
                             </div>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="bg-gray-50 border-b">
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {filteredOrders.length > 0 ? (
-                                        filteredOrders.map((order: any) => (
-                                            <tr key={order._id} className="hover:bg-gray-50 transition-colors duration-200">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        #{order._id.slice(-6).toUpperCase()}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-900">
-                                                        {formatDate(order.createdAt)}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-900">
-                                                        {formatUserName(order.user)}
-                                                    </div>
-                                                    <div className="text-sm text-gray-500">
-                                                        {order.shippingAddress.city || 'N/A'}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-900">
-                                                        ${order.totalPrice.toFixed(2)}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                        getStatusColor(order.isPaid, order.isDelivered)
-                                                    }`}>
-                                                        {getStatusText(order.isPaid, order.isDelivered)}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <button
-                                                        onClick={() => handleViewDetails(order)}
-                                                        className="text-blue-600 hover:text-blue-900"
-                                                    >
-                                                        View Details
-                                                    </button>
+                        <>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b">
+                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {currentOrders.length > 0 ? (
+                                            currentOrders.map((order: any) => (
+                                                <tr key={order._id} className="hover:bg-gray-50 transition-colors duration-200">
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            #{order._id.slice(-6).toUpperCase()}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm text-gray-900">
+                                                            {formatDate(order.createdAt)}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm text-gray-900">
+                                                            {formatUserName(order.user)}
+                                                        </div>
+                                                        <div className="text-sm text-gray-500">
+                                                            {order.shippingAddress.city || 'N/A'}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm text-gray-900">
+                                                            ${order.totalPrice.toFixed(2)}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                            getStatusColor(order.isPaid, order.isDelivered)
+                                                        }`}>
+                                                            {getStatusText(order.isPaid, order.isDelivered)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                        <button
+                                                            onClick={() => handleViewDetails(order)}
+                                                            className="text-blue-600 hover:text-blue-900"
+                                                        >
+                                                            View Details
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                                    </svg>
+                                                    <p className="mt-2 text-sm">No orders found.</p>
                                                 </td>
                                             </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                                                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                                </svg>
-                                                <p className="mt-2 text-sm">No orders found.</p>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Pagination */}
+                            {filteredOrders.length > 0 && (
+                                <div className="px-6 py-4 border-t border-gray-200">
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-sm text-gray-700">
+                                            Showing <span className="font-medium">{indexOfFirstOrder + 1}</span> to{' '}
+                                            <span className="font-medium">
+                                                {Math.min(indexOfLastOrder, filteredOrders.length)}
+                                            </span>{' '}
+                                            of <span className="font-medium">{filteredOrders.length}</span> results
+                                        </div>
+                                        <div className="flex space-x-2">
+                                            <button
+                                                onClick={() => handlePageChange(currentPage - 1)}
+                                                disabled={currentPage === 1}
+                                                className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Previous
+                                            </button>
+                                            {[...Array(totalPages)].map((_, index) => (
+                                                <button
+                                                    key={index + 1}
+                                                    onClick={() => handlePageChange(index + 1)}
+                                                    className={`px-3 py-1 rounded-md text-sm font-medium ${
+                                                        currentPage === index + 1
+                                                            ? 'bg-blue-600 text-white'
+                                                            : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    {index + 1}
+                                                </button>
+                                            ))}
+                                            <button
+                                                onClick={() => handlePageChange(currentPage + 1)}
+                                                disabled={currentPage === totalPages}
+                                                className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
