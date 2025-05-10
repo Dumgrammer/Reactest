@@ -27,6 +27,21 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
         setCart(storedCart);
     }, []);
 
+    // Add this useEffect to sync with props
+    useEffect(() => {
+        setCart(cartItems);
+    }, [cartItems]);
+
+    const handleRemove = (index: number) => {
+        const updatedCart = cart.filter((_, i) => i !== index);
+        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+        setCart(updatedCart);
+        // Call the parent's onRemoveItem callback
+        onRemoveItem(cart[index]._id);
+        window.dispatchEvent(new Event('cartUpdated'));
+        setIsSuccessOpen(true);
+    };
+
     const updateCart = (updatedCart: CartItem[]) => {
         setCart(updatedCart);
         localStorage.setItem("cartItems", JSON.stringify(updatedCart));
@@ -90,17 +105,12 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
                                         </div>
 
                                         <button
-                                            type="button"
-                                            onClick={() => {
-                                                const updatedCart = cart.filter((_, i) => i !== index);
-                                                localStorage.setItem("cartItems", JSON.stringify(updatedCart));
-                                                window.dispatchEvent(new Event('cartUpdated'));
-                                                setIsSuccessOpen(true);
-                                            }}
-                                            className="font-medium text-indigo-600 hover:text-indigo-500"
-                                        >
-                                            Remove
-                                        </button>
+            type="button"
+            onClick={() => handleRemove(index)}
+            className="font-medium text-indigo-600 hover:text-indigo-500"
+        >
+            <i className="remove-cart fa fa-trash"></i>
+        </button>
                                     </div>
                                 </div>
                             </li>

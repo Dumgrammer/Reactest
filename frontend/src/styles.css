@@ -54,3 +54,12 @@
   padding: 0 10px; /* Space between text and line */
   width: 100%;
 }
+
+.search-btn {
+  border: 1px solid rgb(21 152 75);
+  background: #fff;
+}
+
+.remove-cart {
+  color: rgb(152, 21, 21) !important;
+}

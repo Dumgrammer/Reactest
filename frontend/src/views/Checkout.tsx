@@ -43,10 +43,12 @@ export default function CheckOut({ open, setOpen }: CheckOutProps) {
     };
 
     const handleRemoveItem = (itemId: string) => {
-        const updatedCart = cartItems.filter((item: any) => item._id !== itemId);
-        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
-        window.dispatchEvent(new Event('cartUpdated'));
-    };
+    const updatedCart = cartItems.filter((item: any) => item._id !== itemId);
+    localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+    setCartItems(updatedCart); // Make sure to update the state
+    updateCartAndTotal(); // Recalculate totals
+    window.dispatchEvent(new Event('cartUpdated'));
+};
 
     const handleCheckout = () => {
         setShowConfirmModal(true);
