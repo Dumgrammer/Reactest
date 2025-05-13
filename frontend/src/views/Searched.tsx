@@ -194,7 +194,7 @@ function Searched() {
                     <button type="submit" className="absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 text-white"><i className="fa fa-search"></i></button>
                 </div>
             </form>
-                    <div className="container mx-auto">
+                    <div className="4xl:mx-72 md:mx-auto">
                         <div className="w-full p-4">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         {/* Filters 1 */}
@@ -309,7 +309,7 @@ function Searched() {
                         <div className="flex flex-wrap -m-4">
                             {products.length > 0 ? (
                                 products.map((product: any) => (
-                                    <div className="p-4 lg:w-1/2 md:w-full" key={product._id}>
+                                    <div className="p-4 lg:w-1/4 md:w-1/2" key={product._id}>
                                         <div className="bg-white">
                                             <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
                                                 <div className="mt-6 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
@@ -317,7 +317,7 @@ function Searched() {
                                                         <img
                                                             src={Array.isArray(product.image) ? product.image[0] : product.image}
                                                             alt={product.name}
-                                                            className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80"
+                                                            className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto"
                                                         />
                                                         <div className="mt-4 flex justify-between">
                                                             <div>
