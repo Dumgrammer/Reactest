@@ -204,31 +204,10 @@ function ProductDetail() {
                             <h2 className="text-sm title-font text-gray-500 tracking-widest">{prod.category}</h2>
                             <h1 className="text-gray-900 text-3xl title-font font-medium mb-4">{prod.name}</h1>
                             
-                            {/* Rating Section */}
-                            <div className="flex items-center mb-4">
-                                <div className="flex items-center">
-                                    {[...Array(5)].map((_, i) => (
-                                        <svg
-                                            key={i}
-                                            fill="currentColor"
-                                            stroke="currentColor"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            className={`w-4 h-4 ${i < prod.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path>
-                                        </svg>
-                                    ))}
-                                </div>
-                                <span className="text-gray-600 ml-2">({prod.numReview} reviews)</span>
-                            </div>
+                            
 
                             <div className="flex mb-4">
                                 <a className="flex-grow text-indigo-500 border-b-2 border-indigo-500 py-2 text-lg px-1">Description</a>
-                                <a className="flex-grow border-b-2 border-gray-300 py-2 text-lg px-1">Reviews</a>
-                                <a className="flex-grow border-b-2 border-gray-300 py-2 text-lg px-1">Details</a>
                             </div>
                             <p className="leading-relaxed mb-4">{prod.description}</p>
 
