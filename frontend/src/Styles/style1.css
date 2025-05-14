@@ -14,6 +14,29 @@
 }
 
 @media (min-width: 0px) and (max-width: 768px) {
+  .item-det-cont {
+            display: flex
+;
+        text-align: right;
+        flex-direction: column;
+
+        h3 {
+          font-size: small;
+          font-weight: bold;
+          line-height: 1.2;
+        }
+
+  }
+  .product-cont {
+    margin: 0;
+    padding: 0;
+  }
+
+  .ver-cont input {
+    width: 30px;
+    height: 30px;
+  }
+
   .header-cont {
     display: flex;
     justify-content: center;
