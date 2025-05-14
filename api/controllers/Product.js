@@ -8,13 +8,20 @@ exports.getProduct = async (req, res) => {
         const products = await Product.find({ isNotArchived: 1 });
 
         const updatedProducts = products.map(product => {
+            // Calculate total stock from inventory
+            const totalStock = product.inventory.reduce((sum, item) => sum + item.quantity, 0);
+            
             const updatedImages = product.image.map(img => {
                 if (!img.startsWith("http")) {
                     return `${req.protocol}://${req.get("host")}/${img.replace(/\\/g, "/")}`;
                 }
                 return img;
             });
-            return { ...product.toObject(), image: updatedImages };
+            return { 
+                ...product.toObject(), 
+                image: updatedImages,
+                countInStock: totalStock // Update countInStock to match inventory total
+            };
         });
 
         return send.sendResponse(res, 200, updatedProducts, "Products found!");
@@ -278,7 +285,7 @@ exports.updateProduct = async (req, res) => {
             });
         }
 
-        // Calculate total stock
+        // Calculate total stock from inventory
         const totalStock = inventoryItems.reduce((sum, item) => sum + parseInt(item.quantity), 0);
 
         const updatedProduct = await Product.findByIdAndUpdate(
@@ -294,7 +301,7 @@ exports.updateProduct = async (req, res) => {
                 size: sizes,
                 image: updatedImages,
                 inventory: inventoryItems,
-                countInStock: totalStock // Update countInStock for backward compatibility
+                countInStock: totalStock // Update countInStock to match inventory total
             },
             { new: true }
         );

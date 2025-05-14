@@ -119,8 +119,15 @@ exports.orderProduct = async (req, res) => {
                 return send.sendNotFoundResponse(res, `Product with ID ${item.product} not available`);
             }
 
-            if (existingProduct.countInStock < parseInt(item.qty)) {
-                return send.sendBadRequestResponse(res, `Not enough stock for ${existingProduct.name}`);
+            // Check inventory for specific size and type
+            const inventoryItem = existingProduct.inventory.find(
+                inv => inv.size === item.size && inv.type === item.type
+            );
+
+            if (!inventoryItem || inventoryItem.quantity < parseInt(item.qty)) {
+                return send.sendBadRequestResponse(res, 
+                    `Not enough stock for ${existingProduct.name} (${item.size}, ${item.type})`
+                );
             }
         }
 
@@ -136,11 +143,25 @@ exports.orderProduct = async (req, res) => {
 
         const createdOrder = await order.save();
 
-        // Update product stock
+        // Update product inventory and stock
         for (const item of orderItems) {
             const product = await Product.findById(item.product);
             if (product) {
-                product.countInStock -= parseInt(item.qty);
+                // Find and update the specific inventory item
+                const inventoryItem = product.inventory.find(
+                    inv => inv.size === item.size && inv.type === item.type
+                );
+                
+                if (inventoryItem) {
+                    inventoryItem.quantity -= parseInt(item.qty);
+                }
+
+                // Update total stock count
+                product.countInStock = product.inventory.reduce(
+                    (sum, inv) => sum + inv.quantity, 
+                    0
+                );
+
                 await product.save();
             }
         }
@@ -172,11 +193,25 @@ exports.orderPayment = async (req, res) => {
 
         const updatedOrder = await order.save();
 
-        // Update product stock
+        // Update product inventory and stock
         for (const item of order.orderItems) {
             const product = await Product.findById(item.product);
             if (product) {
-                product.countInStock -= parseInt(item.qty);
+                // Find and update the specific inventory item
+                const inventoryItem = product.inventory.find(
+                    inv => inv.size === item.size && inv.type === item.type
+                );
+                
+                if (inventoryItem) {
+                    inventoryItem.quantity -= parseInt(item.qty);
+                }
+
+                // Update total stock count
+                product.countInStock = product.inventory.reduce(
+                    (sum, inv) => sum + inv.quantity, 
+                    0
+                );
+
                 await product.save();
             }
         }
