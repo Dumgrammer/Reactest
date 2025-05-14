@@ -1,46 +1,41 @@
-<h1 align="center">🎓 <b>Gordon College Campus Cart</b> </h1>
+# Gordon College Campus Cart
 
-<p align="center">
-  <b>An easy-to-use online platform for browsing, ordering, and managing products within the Gordon College campus.</b><br>
-  <i>Shop conveniently and efficiently—whether you’re a student or staff!</i>
-</p>
+**Gordon College Campus Cart** is an easy-to-use online platform for browsing, ordering, and managing products within the Gordon College campus. Shop conveniently and efficiently—whether you’re a student or staff!
 
-<p align="center">
-  🌐 <b>Live Demo:</b> <a href="https://gccampuscart.online">gccampuscart.online</a>
-</p>
+**Live Demo:** [gccampuscart.online](https://gccampuscart.online)
 
 ---
 
-## ✨ <b>Features</b>
+## Features
 
-- 🛒 <b>User registration and email verification</b>
-- 🔍 <b>Product browsing, search, and ordering</b>
-- 🛍️ <b>Shopping cart with real-time updates</b>
-- 💸 <b>Checkout with GCash or Cash on Pickup</b>
-- 📦 <b>Order tracking and order history</b>
-- 🛠️ <b>Admin dashboard for managing users, products, and orders</b>
-- 📧 <b>Email notifications for account and order updates</b>
+- User registration and email verification
+- Product browsing, search, and ordering
+- Shopping cart with real-time updates
+- Checkout with GCash or Cash on Pickup
+- Order tracking and order history
+- Admin dashboard for managing users, products, and orders
+- Email notifications for account and order updates
 
 ---
 
-## 📁 <b>Project Structure</b>
+## Project Structure
 
-```text
+```
 api/        # Node.js/Express backend (REST API)
 frontend/   # React frontend application
 ```
 
 ---
 
-## 🚀 <b>Getting Started (Development)</b>
+## Getting Started (Development)
 
-### <b>Prerequisites</b>
+### Prerequisites
 
-- <b>Node.js</b> (v14 or higher)
-- <b>npm</b>
-- <b>MongoDB</b>
+- Node.js (v14 or higher)
+- npm
+- MongoDB
 
-### <b>Backend Setup (`api/`)</b>
+### Backend Setup (`api/`)
 
 ```sh
 cd api
@@ -50,7 +45,7 @@ npm start
 ```
 _Backend runs on [http://localhost:8080](http://localhost:8080) by default._
 
-### <b>Frontend Setup (`frontend/`)</b>
+### Frontend Setup (`frontend/`)
 
 ```sh
 cd frontend
@@ -61,57 +56,57 @@ _Frontend runs on [http://localhost:3000](http://localhost:3000)._
 
 ---
 
-## 📚 <b>API Endpoints</b>
+## API Endpoints
 
 The backend provides a RESTful API for user, product, order, and log management.
 
-### <b>User Routes</b>
+### User Routes
 
-- **POST** `/api/users/register` — Register a new user
-- **POST** `/api/users/login` — User login
-- **POST** `/api/users/verify-email` — Verify user email
-- **POST** `/api/users/resend-verification` — Resend verification code
-- **GET** `/api/users/profile` — Get user profile (auth required)
-- **PUT** `/api/users/profile` — Update user profile (auth required)
-- **GET** `/api/users/auth/google` — Google OAuth login
+- POST `/api/users/register` — Register a new user
+- POST `/api/users/login` — User login
+- POST `/api/users/verify-email` — Verify user email
+- POST `/api/users/resend-verification` — Resend verification code
+- GET `/api/users/profile` — Get user profile (auth required)
+- PUT `/api/users/profile` — Update user profile (auth required)
+- GET `/api/users/auth/google` — Google OAuth login
 
-### <b>Product Routes</b>
+### Product Routes
 
-- **GET** `/api/products` — List all products
-- **GET** `/api/products/:id` — Get product details
-- **GET** `/api/products/search` — Search products
-- **POST** `/api/products/createproduct` — Create product (admin)
-- **PATCH** `/api/products/:id` — Update product (admin)
-- **DELETE** `/api/products/:id` — Archive product (admin)
-- **PATCH** `/api/products/restore/:id` — Restore product (admin)
+- GET `/api/products` — List all products
+- GET `/api/products/:id` — Get product details
+- GET `/api/products/search` — Search products
+- POST `/api/products/createproduct` — Create product (admin)
+- PATCH `/api/products/:id` — Update product (admin)
+- DELETE `/api/products/:id` — Archive product (admin)
+- PATCH `/api/products/restore/:id` — Restore product (admin)
 
-### <b>Order Routes</b>
+### Order Routes
 
-- **GET** `/api/orders` — List all orders (admin)
-- **POST** `/api/orders` — Place an order
-- **GET** `/api/orders/:id` — Get order details
-- **PUT** `/api/orders/:id/payment` — Update payment status
-- **PUT** `/api/orders/:id/status` — Update delivery status
-- **GET** `/api/orders/myorders/:id` — Get user’s orders
-- **GET** `/api/orders/myorders/:userId/:orderId` — Get specific user order
+- GET `/api/orders` — List all orders (admin)
+- POST `/api/orders` — Place an order
+- GET `/api/orders/:id` — Get order details
+- PUT `/api/orders/:id/payment` — Update payment status
+- PUT `/api/orders/:id/status` — Update delivery status
+- GET `/api/orders/myorders/:id` — Get user’s orders
+- GET `/api/orders/myorders/:userId/:orderId` — Get specific user order
 
-### <b>Logs</b>
+### Logs
 
-- **GET** `/api/logs` — Get all logs (admin)
+- GET `/api/logs` — Get all logs (admin)
 
 ---
 
-## 📬 <b>Using the API with Postman</b>
+## Using the API with Postman
 
 You can test all backend endpoints using [Postman](https://www.postman.com/). Below are example requests for each main functionality.
 
 ---
 
-### 🧑 <b>User Endpoints</b>
+### User Endpoints
 
-#### <b>Register a User</b>
-- **POST** `https://gccampuscart.online/api/users/register`
-- **Body (JSON):**
+#### Register a User
+- POST `https://gccampuscart.online/api/users/register`
+- Body (JSON):
   ```json
   {
     "firstname": "Juan",
@@ -123,9 +118,9 @@ You can test all backend endpoints using [Postman](https://www.postman.com/). Be
   }
   ```
 
-#### <b>Verify Email</b>
-- **POST** `https://gccampuscart.online/api/users/verify-email`
-- **Body (JSON):**
+#### Verify Email
+- POST `https://gccampuscart.online/api/users/verify-email`
+- Body (JSON):
   ```json
   {
     "email": "juan@example.com",
@@ -133,18 +128,18 @@ You can test all backend endpoints using [Postman](https://www.postman.com/). Be
   }
   ```
 
-#### <b>Resend Verification Code</b>
-- **POST** `https://gccampuscart.online/api/users/resend-verification`
-- **Body (JSON):**
+#### Resend Verification Code
+- POST `https://gccampuscart.online/api/users/resend-verification`
+- Body (JSON):
   ```json
   {
     "email": "juan@example.com"
   }
   ```
 
-#### <b>Login</b>
-- **POST** `https://gccampuscart.online/api/users/login`
-- **Body (JSON):**
+#### Login
+- POST `https://gccampuscart.online/api/users/login`
+- Body (JSON):
   ```json
   {
     "email": "juan@example.com",
@@ -152,16 +147,16 @@ You can test all backend endpoints using [Postman](https://www.postman.com/). Be
   }
   ```
 
-#### <b>Get User Profile</b>
-- **GET** `https://gccampuscart.online/api/users/profile`
-- **Headers:**  
+#### Get User Profile
+- GET `https://gccampuscart.online/api/users/profile`
+- Headers:  
   `Authorization: Bearer <your_token>`
 
-#### <b>Update User Profile</b>
-- **PUT** `https://gccampuscart.online/api/users/profile`
-- **Headers:**  
+#### Update User Profile
+- PUT `https://gccampuscart.online/api/users/profile`
+- Headers:  
   `Authorization: Bearer <your_token>`
-- **Body (JSON):**
+- Body (JSON):
   ```json
   {
     "firstname": "Juan",
@@ -179,42 +174,42 @@ You can test all backend endpoints using [Postman](https://www.postman.com/). Be
   }
   ```
 
-#### <b>Google OAuth Login</b>
-- **GET** `https://gccampuscart.online/api/users/auth/google`
+#### Google OAuth Login
+- GET `https://gccampuscart.online/api/users/auth/google`
 - _Follow the OAuth flow in your browser._
 
 ---
 
-### 📦 <b>Product Endpoints</b>
+### Product Endpoints
 
-#### <b>List All Products</b>
-- **GET** `https://gccampuscart.online/api/products`
+#### List All Products
+- GET `https://gccampuscart.online/api/products`
 
-#### <b>Get Product Details</b>
-- **GET** `https://gccampuscart.online/api/products/<product_id>`
+#### Get Product Details
+- GET `https://gccampuscart.online/api/products/<product_id>`
 
-#### <b>Search Products</b>
-- **GET** `https://gccampuscart.online/api/products/search?keyword=shirt`
+#### Search Products
+- GET `https://gccampuscart.online/api/products/search?keyword=shirt`
 
-#### <b>Create Product (Admin)</b>
-- **POST** `https://gccampuscart.online/api/products/createproduct`
-- **Headers:**  
+#### Create Product (Admin)
+- POST `https://gccampuscart.online/api/products/createproduct`
+- Headers:  
   `Authorization: Bearer <admin_token>`
-- **Body:**  
+- Body:  
   Form-data (for images and fields, see API docs)
 
-#### <b>Update Product (Admin)</b>
-- **PATCH** `https://gccampuscart.online/api/products/<product_id>`
-- **Headers:**  
+#### Update Product (Admin)
+- PATCH `https://gccampuscart.online/api/products/<product_id>`
+- Headers:  
   `Authorization: Bearer <admin_token>`
-- **Body:**  
+- Body:  
   Form-data (for images and fields, see API docs)
 
-#### <b>Archive Product (Admin)</b>
-- **DELETE** `https://gccampuscart.online/api/products/<product_id>`
-- **Headers:**  
+#### Archive Product (Admin)
+- DELETE `https://gccampuscart.online/api/products/<product_id>`
+- Headers:  
   `Authorization: Bearer <admin_token>`
-- **Body (JSON):**
+- Body (JSON):
   ```json
   {
     "reason": "Outdated product",
@@ -223,11 +218,11 @@ You can test all backend endpoints using [Postman](https://www.postman.com/). Be
   }
   ```
 
-#### <b>Restore Product (Admin)</b>
-- **PATCH** `https://gccampuscart.online/api/products/restore/<product_id>`
-- **Headers:**  
+#### Restore Product (Admin)
+- PATCH `https://gccampuscart.online/api/products/restore/<product_id>`
+- Headers:  
   `Authorization: Bearer <admin_token>`
-- **Body (JSON):**
+- Body (JSON):
   ```json
   {
     "reason": "Restocking",
@@ -238,18 +233,18 @@ You can test all backend endpoints using [Postman](https://www.postman.com/). Be
 
 ---
 
-### 🛒 <b>Order Endpoints</b>
+### Order Endpoints
 
-#### <b>List All Orders (Admin)</b>
-- **GET** `https://gccampuscart.online/api/orders`
-- **Headers:**  
+#### List All Orders (Admin)
+- GET `https://gccampuscart.online/api/orders`
+- Headers:  
   `Authorization: Bearer <admin_token>`
 
-#### <b>Place an Order</b>
-- **POST** `https://gccampuscart.online/api/orders`
-- **Headers:**  
+#### Place an Order
+- POST `https://gccampuscart.online/api/orders`
+- Headers:  
   `Authorization: Bearer <your_token>`
-- **Body (JSON):**
+- Body (JSON):
   ```json
   {
     "orderItems": [
@@ -270,27 +265,27 @@ You can test all backend endpoints using [Postman](https://www.postman.com/). Be
   }
   ```
 
-#### <b>Get Order Details</b>
-- **GET** `https://gccampuscart.online/api/orders/<order_id>`
-- **Headers:**  
+#### Get Order Details
+- GET `https://gccampuscart.online/api/orders/<order_id>`
+- Headers:  
   `Authorization: Bearer <your_token>`
 
-#### <b>Update Payment Status (Admin)</b>
-- **PUT** `https://gccampuscart.online/api/orders/<order_id>/payment`
-- **Headers:**  
+#### Update Payment Status
+- PUT `https://gccampuscart.online/api/orders/<order_id>/payment`
+- Headers:  
   `Authorization: Bearer <admin_token>`
-- **Body (JSON):**
+- Body (JSON):
   ```json
   {
     "isPaid": true
   }
   ```
 
-#### <b>Update Delivery Status (Admin)</b>
-- **PUT** `https://gccampuscart.online/api/orders/<order_id>/status`
-- **Headers:**  
+#### Update Delivery Status
+- PUT `https://gccampuscart.online/api/orders/<order_id>/status`
+- Headers:  
   `Authorization: Bearer <admin_token>`
-- **Body (JSON):**
+- Body (JSON):
   ```json
   {
     "isDelivered": true,
@@ -298,23 +293,23 @@ You can test all backend endpoints using [Postman](https://www.postman.com/). Be
   }
   ```
 
-#### <b>Get User’s Orders</b>
-- **GET** `https://gccampuscart.online/api/orders/myorders/<user_id>`
-- **Headers:**  
+#### Get User’s Orders
+- GET `https://gccampuscart.online/api/orders/myorders/<user_id>`
+- Headers:  
   `Authorization: Bearer <your_token>`
 
-#### <b>Get Specific User Order</b>
-- **GET** `https://gccampuscart.online/api/orders/myorders/<user_id>/<order_id>`
-- **Headers:**  
+#### Get Specific User Order
+- GET `https://gccampuscart.online/api/orders/myorders/<user_id>/<order_id>`
+- Headers:  
   `Authorization: Bearer <your_token>`
 
 ---
 
-### 📝 <b>Logs (Admin)</b>
+### Logs (Admin)
 
-#### <b>Get All Logs</b>
-- **GET** `https://gccampuscart.online/api/logs`
-- **Headers:**  
+#### Get All Logs
+- GET `https://gccampuscart.online/api/logs`
+- Headers:  
   `Authorization: Bearer <admin_token>`
 
 ---
@@ -323,11 +318,11 @@ You can test all backend endpoints using [Postman](https://www.postman.com/). Be
 
 ---
 
-## 🌍 <b>Deployment</b>
+## Deployment
 
 The application is deployed on a custom Linux server. The domain was purchased from Hostinger and DNS is managed via Cloudflare.
 
-### <b>Deployment Steps</b>
+### Deployment Steps
 
 1. **Provision a Linux Server**
    - Set up a Linux server (e.g., Ubuntu) with SSH access.
@@ -374,7 +369,7 @@ The application is deployed on a custom Linux server. The domain was purchased f
 
 ---
 
-## 📝 <b>Usage</b>
+## Usage
 
 - Visit [gccampuscart.online](https://gccampuscart.online)
 - Register or log in to your account
@@ -383,10 +378,10 @@ The application is deployed on a custom Linux server. The domain was purchased f
 
 ---
 
-## 📄 <b>License</b>
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-<p align="center"><i>Developed for Gordon College campus use.</i></p>
+_Developed for Gordon College campus use._
