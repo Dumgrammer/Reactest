@@ -521,12 +521,12 @@ export default function ProductsList() {
                                 </button>
                             </div>
                             <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="bg-gray-50 border-b">
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                <table className="w-full table-auto">
+                                    <thead className="bg-gray-50">
+                                        <tr className="border-b">
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                                             <th 
-                                                className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                                 onClick={() => handleLogsSort('action')}
                                             >
                                                 <div className="flex items-center">
@@ -538,10 +538,10 @@ export default function ProductsList() {
                                                     )}
                                                 </div>
                                             </th>
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Product</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Reason</th>
                                             <th 
-                                                className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                                 onClick={() => handleLogsSort('createdAt')}
                                             >
                                                 <div className="flex items-center">
@@ -558,13 +558,13 @@ export default function ProductsList() {
                                     <tbody className="divide-y divide-gray-200">
                                         {currentLogs.map((log) => (
                                             <tr key={log._id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                <td className="px-4 py-4 whitespace-nowrap">
                                                     <div className="text-sm text-gray-900">
                                                         {`${log.user.firstname} ${log.user.middlename ? log.user.middlename + ' ' : ''}${log.user.lastname}`}
                                                     </div>
-                                                    <div className="text-sm text-gray-500">{log.user.email}</div>
+                                                    <div className="text-sm text-gray-500 hidden md:block">{log.user.email}</div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                <td className="px-4 py-4 whitespace-nowrap">
                                                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                                         log.action === 'archive' ? 'bg-red-100 text-red-800' :
                                                         log.action === 'restore' ? 'bg-green-100 text-green-800' :
@@ -572,17 +572,21 @@ export default function ProductsList() {
                                                     }`}>
                                                         {log.action}
                                                     </span>
+                                                    {/* Mobile only view for product */}
+                                                    <div className="text-xs text-gray-500 mt-1 md:hidden">
+                                                        {log.productId.name}
+                                                    </div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
                                                     {log.productId.name}
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-900">
+                                                <td className="px-4 py-4 text-sm text-gray-900 hidden md:table-cell">
                                                     {log.reason}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                                     {new Date(log.createdAt).toLocaleString('en-US', {
                                                         year: 'numeric',
-                                                        month: 'long',
+                                                        month: 'short',
                                                         day: 'numeric',
                                                         hour: 'numeric',
                                                         minute: 'numeric',
@@ -597,7 +601,7 @@ export default function ProductsList() {
 
                             {/* Pagination for Logs */}
                             {logsTotalPages > 1 && (
-                                <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                                <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                                     <div className="flex-1 flex justify-between sm:hidden">
                                         <button
                                             onClick={() => handleLogsPageChange(logsCurrentPage - 1)}
@@ -668,16 +672,16 @@ export default function ProductsList() {
                     ) : (
                         <>
                             <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="bg-gray-50 border-b">
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                <table className="w-full table-auto hidden md:table">
+                                    <thead className="bg-gray-50">
+                                        <tr className="border-b">
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                                             <th 
-                                                className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                                 onClick={() => handleSort('createdAt')}
                                             >
                                                 <div className="flex items-center">
-                                                    Created At
+                                                    Created
                                                     {sortField === 'createdAt' && (
                                                         <span className="ml-1">
                                                             {sortDirection === 'asc' ? '↑' : '↓'}
@@ -686,11 +690,11 @@ export default function ProductsList() {
                                                 </div>
                                             </th>
                                             <th 
-                                                className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden lg:table-cell"
                                                 onClick={() => handleSort('updatedAt')}
                                             >
                                                 <div className="flex items-center">
-                                                    Updated At
+                                                    Updated
                                                     {sortField === 'updatedAt' && (
                                                         <span className="ml-1">
                                                             {sortDirection === 'asc' ? '↑' : '↓'}
@@ -699,7 +703,7 @@ export default function ProductsList() {
                                                 </div>
                                             </th>
                                             <th 
-                                                className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                                 onClick={() => handleSort('price')}
                                             >
                                                 <div className="flex items-center">
@@ -711,9 +715,9 @@ export default function ProductsList() {
                                                     )}
                                                 </div>
                                             </th>
-                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                                             <th 
-                                                className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                                 onClick={() => handleSort('category')}
                                             >
                                                 <div className="flex items-center">
@@ -725,14 +729,14 @@ export default function ProductsList() {
                                                     )}
                                                 </div>
                                             </th>
-                                            <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
                                         {currentItems.length > 0 ? (
                                             currentItems.map((product: any) => (
                                                 <tr key={product._id} className="hover:bg-gray-50 transition-colors duration-200">
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-4 py-4">
                                                         <div className="flex items-center">
                                                             <div className="h-10 w-10 flex-shrink-0">
                                                                 <img
@@ -741,45 +745,39 @@ export default function ProductsList() {
                                                                     alt={product.name}
                                                                 />
                                                             </div>
-                                                            <div className="ml-4">
+                                                            <div className="ml-3">
                                                                 <div className="text-sm font-medium text-gray-900">{product.name}</div>
                                                             </div>
                                                         </div>
                                                     </td>
 
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-4 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-900">
                                                             {new Date(product.createdAt).toLocaleString('en-US', {
                                                                 year: 'numeric',
-                                                                month: 'long',
+                                                                month: 'short',
                                                                 day: 'numeric',
-                                                                hour: 'numeric',
-                                                                minute: 'numeric',
                                                                 hour12: true
                                                             })}
                                                         </div>
                                                     </td>
                                                         
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-4 py-4 whitespace-nowrap hidden lg:table-cell">
                                                         <div className="text-sm text-gray-900">
                                                             {new Date(product.updatedAt).toLocaleString('en-US', {
                                                                 year: 'numeric',
-                                                                month: 'long',
+                                                                month: 'short',
                                                                 day: 'numeric',
-                                                                hour: 'numeric',
-                                                                minute: 'numeric',
                                                                 hour12: true
                                                             })}
                                                         </div>
                                                     </td>
 
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-4 py-4 whitespace-nowrap">
                                                         <div className="text-sm text-gray-900">₱{product.price.toFixed(2)}</div>
                                                     </td>
 
-
-
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-4 py-4 whitespace-nowrap">
                                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.countInStock > 100
                                                             ? 'bg-green-100 text-green-800'
                                                             : product.countInStock >= 10
@@ -789,7 +787,7 @@ export default function ProductsList() {
                                                             {product.countInStock}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-4 py-4 whitespace-nowrap">
                                                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${product.isNotArchived
                                                             ? 'bg-green-100 text-green-800'
                                                             : 'bg-red-100 text-red-800'
@@ -797,12 +795,12 @@ export default function ProductsList() {
                                                             {product.isNotArchived ? 'Active' : 'Archived'}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                         {product.isNotArchived ? (
                                                             <>
                                                                 <button
                                                                     onClick={() => handleOpenEditModal(product)}
-                                                                    className="text-blue-600 hover:text-blue-900 mr-4"
+                                                                    className="text-blue-600 hover:text-blue-900 mr-3"
                                                                 >
                                                                     Edit
                                                                 </button>
@@ -816,7 +814,7 @@ export default function ProductsList() {
                                                         ) : (
                                                             <button
                                                                 onClick={() => handleOpenRestoreModal(product._id)}
-                                                                className="text-green-600 hover:text-red-900"
+                                                                className="text-green-600 hover:text-green-900"
                                                             >
                                                                 Restore
                                                             </button>
@@ -826,18 +824,137 @@ export default function ProductsList() {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                                                <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
                                                     <p>{showArchived ? 'No archived products available.' : 'No products available.'}</p>
                                                 </td>
                                             </tr>
                                         )}
                                     </tbody>
                                 </table>
+
+                                {/* Mobile Card View */}
+                                <div className="md:hidden">
+                                    <div className="flex justify-between items-center py-2 px-4 border-b text-sm text-gray-500">
+                                        <span>Page {currentPage} of {totalPages}</span>
+                                        <div className="flex gap-2">
+                                            <button 
+                                                className="px-3 py-1 rounded-md bg-gray-100 disabled:opacity-50"
+                                                disabled={currentPage === 1}
+                                                onClick={() => handlePageChange(currentPage - 1)}
+                                            >
+                                                Previous
+                                            </button>
+                                            <button 
+                                                className="px-3 py-1 rounded-md bg-gray-100 disabled:opacity-50"
+                                                disabled={currentPage === totalPages}
+                                                onClick={() => handlePageChange(currentPage + 1)}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    {currentItems.length > 0 ? (
+                                        currentItems.map((product: any) => (
+                                            <div key={product._id} className="border-b last:border-b-0 p-4">
+                                                <div className="flex items-center mb-3">
+                                                    <div className="h-12 w-12 flex-shrink-0 mr-3">
+                                                        <img
+                                                            className="h-12 w-12 rounded-full object-cover"
+                                                            src={product.image[0]}
+                                                            alt={product.name}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-md font-medium text-gray-900">{product.name}</h3>
+                                                        <div className="flex mt-1 space-x-2">
+                                                            <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${product.isNotArchived
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : 'bg-red-100 text-red-800'
+                                                                }`}>
+                                                                {product.isNotArchived ? 'Active' : 'Archived'}
+                                                            </span>
+                                                            <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${product.countInStock > 100
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : product.countInStock >= 10
+                                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                                    : 'bg-red-100 text-red-800'
+                                                                }`}>
+                                                                Stock: {product.countInStock}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-2 gap-y-2 text-sm">
+                                                    <div>
+                                                        <span className="text-gray-500">Price:</span>
+                                                        <span className="ml-1 text-gray-900 font-medium">₱{product.price.toFixed(2)}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-gray-500">Category:</span>
+                                                        <span className="ml-1 text-gray-900">{product.category}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-gray-500">Created:</span>
+                                                        <span className="ml-1 text-gray-900">
+                                                            {new Date(product.createdAt).toLocaleDateString('en-US', {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric'
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-gray-500">Updated:</span>
+                                                        <span className="ml-1 text-gray-900">
+                                                            {new Date(product.updatedAt).toLocaleDateString('en-US', {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric'
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="mt-3 flex justify-end space-x-2">
+                                                    {product.isNotArchived ? (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleOpenEditModal(product)}
+                                                                className="px-3 py-1 rounded bg-blue-50 text-blue-600 text-sm"
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleOpenDeleteModal(product._id)}
+                                                                className="px-3 py-1 rounded bg-red-50 text-red-600 text-sm"
+                                                            >
+                                                                Archive
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleOpenRestoreModal(product._id)}
+                                                            className="px-3 py-1 rounded bg-green-50 text-green-600 text-sm"
+                                                        >
+                                                            Restore
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-12 text-center text-gray-500">
+                                            <p>{showArchived ? 'No archived products available.' : 'No products available.'}</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Pagination Controls */}
                             {totalPages > 1 && (
-                                <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                                <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                                     <div className="flex-1 flex justify-between sm:hidden">
                                         <button
                                             onClick={() => handlePageChange(currentPage - 1)}
