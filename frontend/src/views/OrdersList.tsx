@@ -498,7 +498,7 @@ export default function OrdersList() {
                                                             <p className="text-sm text-gray-500">Qty: {item.qty}</p>
                                                         </div>
                                                     </div>
-                                                    <p className="text-sm font-medium text-gray-900">${item.price}</p>
+                                                    <p className="text-sm font-medium text-gray-900">₱{item.price}</p>
                                                 </div>
                                             ))}
                                         </div>
@@ -508,7 +508,7 @@ export default function OrdersList() {
                                     <div className="border-t pt-4">
                                         <div className="flex justify-between">
                                             <p className="text-sm font-medium text-gray-500">Total</p>
-                                            <p className="text-sm font-medium text-gray-900">${selectedOrder.totalPrice.toFixed(2)}</p>
+                                            <p className="text-sm font-medium text-gray-900">₱{selectedOrder.totalPrice.toFixed(2)}</p>
                                         </div>
                                     </div>
 
