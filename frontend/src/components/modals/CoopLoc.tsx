@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogPanel, Description, DialogTitle } from '@headlessui/react';
 import { ReactNode } from 'react';
-
+//New
 interface CoopLocProps {
   isOpen: boolean;
   gif?: ReactNode;

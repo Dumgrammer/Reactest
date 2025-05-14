@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const productController = require('../controllers/Product');
+const protect = require('../middleware/Auth');
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb){

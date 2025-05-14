@@ -130,6 +130,8 @@ export const createGcashOrder = async (cart: any[], total: number) => {
                 qty: item.quantity.toString(),
                 image: item.image,
                 price: item.price.toString(),
+                size: item.size || undefined,
+                type: item.type || undefined,
                 product: item._id
             })),
             paymentMethod: 'gcash',
@@ -236,6 +238,8 @@ export const createCashOnPickupOrder = async (cart: any[], total: number) => {
                 qty: item.quantity.toString(),
                 image: item.image,
                 price: item.price.toString(),
+                size: item.size || undefined,
+                type: item.type || undefined,
                 product: item._id
             })),
             paymentMethod: 'pickup',

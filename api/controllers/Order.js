@@ -113,32 +113,53 @@ exports.orderProduct = async (req, res) => {
 
         // Check if all products exist and have enough stock
         for (const item of orderItems) {
-            const existingProduct = await Product.findById(item.product);
+            const product = await Product.findById(item.product);
+            if (!product) continue;
 
-            if (!existingProduct) {
-                return send.sendNotFoundResponse(res, `Product with ID ${item.product} not available`);
-            }
+            console.log(`Processing product: ${product.name}, Size: ${item.size || 'N/A'}, Type: ${item.type || 'N/A'}, Qty: ${item.qty}`);
 
-            // If product doesn't have size/type, check countInStock directly
-            if (!existingProduct.size?.length && !existingProduct.type?.length) {
-                if (existingProduct.countInStock < parseInt(item.qty)) {
-                    return send.sendBadRequestResponse(res, 
-                        `Not enough stock for ${existingProduct.name}`
-                    );
-                }
+            // If product has no size or type, reduce countInStock directly
+            if (!product.size?.length && !product.type?.length) {
+                product.countInStock -= parseInt(item.qty);
             } else {
-                // Check inventory for specific size and type
-                const inventoryItem = existingProduct.inventory.find(
-                    inv => (!item.size || inv.size === item.size) && 
-                           (!item.type || inv.type === item.type)
-                );
+                const sizeToUpdate = item.size || null;
+                const typeToUpdate = item.type || null;
 
-                if (!inventoryItem || inventoryItem.quantity < parseInt(item.qty)) {
-                    return send.sendBadRequestResponse(res, 
-                        `Not enough stock for ${existingProduct.name}${item.size ? ` (Size: ${item.size})` : ''}${item.type ? ` (Type: ${item.type})` : ''}`
+                const inventoryItem = findInventoryMatch(product, sizeToUpdate, typeToUpdate);
+
+                if (sizeToUpdate && typeToUpdate) {
+                    inventoryItem = product.inventory.find(inv =>
+                        inv.size?.toLowerCase() === sizeToUpdate.toLowerCase() &&
+                        inv.type?.toLowerCase() === typeToUpdate.toLowerCase()
+                    );
+                } else if (sizeToUpdate) {
+                    inventoryItem = product.inventory.find(inv =>
+                        inv.size?.toLowerCase() === sizeToUpdate.toLowerCase()
+                    );
+                } else if (typeToUpdate) {
+                    inventoryItem = product.inventory.find(inv =>
+                        inv.type?.toLowerCase() === typeToUpdate.toLowerCase()
                     );
                 }
+
+                if (!inventoryItem) {
+                    console.warn(`❗ No matching inventory for product ${product.name} (size=${sizeToUpdate}, type=${typeToUpdate}). Skipping deduction.`);
+                    continue;
+                }
+
+                const oldQty = inventoryItem.quantity;
+                inventoryItem.quantity = Math.max(0, oldQty - parseInt(item.qty));
+
+                console.log(`✅ Deducted ${item.qty} from inventory item: ${inventoryItem.size}/${inventoryItem.type}: ${oldQty} → ${inventoryItem.quantity}`);
+
+                // Recalculate total countInStock
+                product.countInStock = product.inventory.reduce(
+                    (sum, inv) => sum + (inv.quantity || 0), 0
+                );
             }
+
+            product.markModified("inventory");
+            await product.save();
         }
 
         // Create new order
@@ -157,28 +178,112 @@ exports.orderProduct = async (req, res) => {
         for (const item of orderItems) {
             const product = await Product.findById(item.product);
             if (product) {
+                console.log(`Processing order for product: ${product.name}, Size: ${item.size || 'N/A'}, Type: ${item.type || 'N/A'}, Qty: ${item.qty}`);
+                console.log(`Initial countInStock: ${product.countInStock}`);
+
                 // If product doesn't have size/type, update countInStock directly
                 if (!product.size?.length && !product.type?.length) {
+                    console.log(`Product has no size/type. Reducing countInStock directly.`);
                     product.countInStock -= parseInt(item.qty);
                 } else {
                     // Find and update the specific inventory item
-                    const inventoryItem = product.inventory.find(
-                        inv => (!item.size || inv.size === item.size) && 
-                               (!item.type || inv.type === item.type)
-                    );
-                    
-                    if (inventoryItem) {
-                        inventoryItem.quantity -= parseInt(item.qty);
+                    const sizeToUpdate = item.size || null;
+                    const typeToUpdate = item.type || null;
+
+                    console.log(`Looking for inventory match with Size: ${sizeToUpdate}, Type: ${typeToUpdate}`);
+                    console.log(`Current inventory array:`, JSON.stringify(product.inventory));
+
+                    // Try to find an exact match first (if both size and type are specified)
+                    let inventoryItem = null;
+
+                    if (sizeToUpdate && typeToUpdate) {
+                        console.log(`Looking for EXACT inventory match: Size=${sizeToUpdate}, Type=${typeToUpdate}`);
+                        inventoryItem = product.inventory.find(inv =>
+                            inv.size === sizeToUpdate && inv.type === typeToUpdate
+                        );
+                    } else if (sizeToUpdate) {
+                        // Log all sizes in inventory to help debug
+                        console.log(`All sizes in inventory:`, product.inventory.map(inv => inv.size));
+
+                        // First try direct string comparison
+                        let exactSizeItem = product.inventory.find(inv => inv.size === sizeToUpdate);
+                        if (exactSizeItem) {
+                            console.log(`FOUND EXACT SIZE MATCH: ${exactSizeItem.size}, Qty: ${exactSizeItem.quantity}`);
+                            inventoryItem = exactSizeItem;
+                        } else {
+                            // Try case-insensitive comparison as fallback
+                            let caseInsensitiveSizeItem = product.inventory.find(
+                                inv => inv.size.toLowerCase() === sizeToUpdate.toLowerCase()
+                            );
+                            if (caseInsensitiveSizeItem) {
+                                console.log(`Found case-insensitive size match: ${caseInsensitiveSizeItem.size}, Qty: ${caseInsensitiveSizeItem.quantity}`);
+                                inventoryItem = caseInsensitiveSizeItem;
+                            } else {
+                                console.log(`WARNING: No match found for size: "${sizeToUpdate}" among sizes: ${product.inventory.map(inv => `"${inv.size}"`).join(', ')}`);
+                            }
+                        }
+                    } else if (typeToUpdate) {
+                        // Only type specified, find by type
+                        inventoryItem = product.inventory.find(inv => inv.type === typeToUpdate);
+                        console.log(`Looking for TYPE match only: Type=${typeToUpdate}`);
                     }
 
-                    // Update total stock count
+                    if (inventoryItem) {
+                        if (sizeToUpdate && typeToUpdate) {
+                            console.log(`Found exact inventory match: ${inventoryItem.size}/${inventoryItem.type}, Qty: ${inventoryItem.quantity}`);
+                        } else if (sizeToUpdate) {
+                            console.log(`Found size match: ${inventoryItem.size}/${inventoryItem.type}, Qty: ${inventoryItem.quantity}`);
+                        } else {
+                            console.log(`Found type match: ${inventoryItem.size}/${inventoryItem.type}, Qty: ${inventoryItem.quantity}`);
+                        }
+
+                        // Double check that we're updating the right item
+                        if (sizeToUpdate && inventoryItem.size !== sizeToUpdate) {
+                            console.log(`WARNING: Size mismatch! Expected ${sizeToUpdate}, got ${inventoryItem.size}`);
+                        }
+
+                        // Track the old quantity for logging
+                        const oldQty = inventoryItem.quantity;
+                        inventoryItem.quantity = Math.max(0, inventoryItem.quantity - parseInt(item.qty));
+                        console.log(`Updated inventory from ${oldQty} to: ${inventoryItem.quantity}`);
+                    } else {
+                        console.log(`No match found for Size=${sizeToUpdate}, Type=${typeToUpdate}, trying fallbacks...`);
+
+                        // If we get here, we didn't find the exact match or the specific size/type match
+                        // Last resort: Try to update the first inventory item that has any stock
+                        if (product.inventory && product.inventory.length > 0) {
+                            // Find first item with stock
+                            inventoryItem = product.inventory.find(inv => inv.quantity > 0);
+
+                            if (inventoryItem) {
+                                console.log(`Found fallback inventory item with stock: ${inventoryItem.size}/${inventoryItem.type}, Qty: ${inventoryItem.quantity}`);
+                                inventoryItem.quantity = Math.max(0, inventoryItem.quantity - parseInt(item.qty));
+                                console.log(`Updated inventory to: ${inventoryItem.quantity}`);
+                            } else {
+                                // No items with stock, use the first one
+                                inventoryItem = product.inventory[0];
+                                console.log(`No items with stock, using first item: ${inventoryItem.size}/${inventoryItem.type}, Qty: ${inventoryItem.quantity}`);
+                                inventoryItem.quantity = 0;
+                                console.log(`Updated inventory to: 0`);
+                            }
+                        } else {
+                            // If somehow no inventory items exist
+                            console.log(`No inventory items found. Reducing countInStock directly.`);
+                            product.countInStock = Math.max(0, product.countInStock - parseInt(item.qty));
+                        }
+                    }
+
+                    // Update total stock count by summing all inventory items
                     product.countInStock = product.inventory.reduce(
-                        (sum, inv) => sum + inv.quantity, 
+                        (sum, inv) => sum + (inv.quantity || 0),
                         0
                     );
+                    console.log(`Recalculated countInStock: ${product.countInStock}`);
+                    console.log(`Current inventory array:`, JSON.stringify(product.inventory));
                 }
 
                 await product.save();
+                console.log(`Saved product with new inventory levels`);
             }
         }
 
@@ -209,33 +314,67 @@ exports.orderPayment = async (req, res) => {
 
         const updatedOrder = await order.save();
 
-        // Update product inventory and stock
-        for (const item of order.orderItems) {
-            const product = await Product.findById(item.product);
-            if (product) {
-                // If product doesn't have size/type, update countInStock directly
-                if (!product.size?.length && !product.type?.length) {
-                    product.countInStock -= parseInt(item.qty);
-                } else {
-                    // Find and update the specific inventory item
-                    const inventoryItem = product.inventory.find(
-                        inv => (!item.size || inv.size === item.size) && 
-                               (!item.type || inv.type === item.type)
-                    );
-                    
-                    if (inventoryItem) {
-                        inventoryItem.quantity -= parseInt(item.qty);
-                    }
+        // Use a map to avoid refetching the same product multiple times
+        const productMap = new Map();
 
-                    // Update total stock count
-                    product.countInStock = product.inventory.reduce(
-                        (sum, inv) => sum + inv.quantity, 
-                        0
+        // Loop through each item in the order
+        for (const item of order.orderItems) {
+            let product;
+            if (productMap.has(item.product.toString())) {
+                product = productMap.get(item.product.toString());
+            } else {
+                product = await Product.findById(item.product);
+                if (!product) continue;
+                productMap.set(item.product.toString(), product);
+            }
+
+            console.log(`Processing payment for product: ${product.name}, Size: ${item.size || 'N/A'}, Type: ${item.type || 'N/A'}, Qty: ${item.qty}`);
+            console.log(`Initial countInStock: ${product.countInStock}`);
+
+            if (!product.size?.length && !product.type?.length) {
+                product.countInStock -= parseInt(item.qty);
+            } else {
+                const sizeToUpdate = item.size || null;
+                const typeToUpdate = item.type || null;
+
+                let inventoryItem = null;
+
+                if (sizeToUpdate && typeToUpdate) {
+                    inventoryItem = product.inventory.find(inv =>
+                        inv.size === sizeToUpdate && inv.type === typeToUpdate
                     );
+                } else if (sizeToUpdate) {
+                    inventoryItem = product.inventory.find(inv => inv.size === sizeToUpdate) ||
+                        product.inventory.find(inv => inv.size?.toLowerCase?.() === sizeToUpdate.toLowerCase());
+                } else if (typeToUpdate) {
+                    inventoryItem = product.inventory.find(inv => inv.type === typeToUpdate);
                 }
 
-                await product.save();
+                if (inventoryItem) {
+                    const oldQty = inventoryItem.quantity;
+                    inventoryItem.quantity = Math.max(0, inventoryItem.quantity - parseInt(item.qty));
+                    console.log(`Updated inventory from ${oldQty} to: ${inventoryItem.quantity}`);
+                } else {
+                    console.log(`No direct inventory match found. Applying fallback strategy.`);
+
+                    if (product.inventory?.length > 0) {
+                        inventoryItem = product.inventory.find(inv => inv.quantity > 0) || product.inventory[0];
+                        inventoryItem.quantity = Math.max(0, inventoryItem.quantity - parseInt(item.qty));
+                        console.log(`Fallback inventory updated to: ${inventoryItem.quantity}`);
+                    } else {
+                        product.countInStock = Math.max(0, product.countInStock - parseInt(item.qty));
+                    }
+                }
+
+                // Recalculate overall stock
+                product.countInStock = product.inventory.reduce((sum, inv) => sum + (inv.quantity || 0), 0);
             }
+        }
+
+        // Save all updated products once
+        for (const product of productMap.values()) {
+            product.markModified('inventory'); // Ensure Mongoose detects inventory changes
+            await product.save();
         }
 
         return send.sendResponse(res, 200, updatedOrder, "Payment updated successfully");
@@ -280,7 +419,7 @@ exports.getUserOrders = async (req, res) => {
     try {
         // Get userId from query param instead of from the middleware
         const userId = req.params.id;
-        
+
         if (!userId) {
             return send.sendBadRequestResponse(res, "User ID is required");
         }
@@ -303,11 +442,11 @@ exports.getUserOrderById = async (req, res) => {
         // Get userId and orderId from path parameters
         const userId = req.params.userId;
         const orderId = req.params.orderId;
-        
+
         if (!userId) {
             return send.sendBadRequestResponse(res, "User ID is required");
         }
-        
+
         const order = await Order.findOne({ _id: orderId, user: userId });
 
         if (!order) {
@@ -325,9 +464,9 @@ exports.updateOrderStatus = async (req, res) => {
     try {
         const { isPaid, isDelivered, userInfo } = req.body;
         const orderId = req.params.id;
-        
+
         const order = await Order.findById(orderId).populate('user', 'email');
-        
+
         if (!order) {
             return send.sendNotFoundResponse(res, "Order not found");
         }
@@ -340,7 +479,7 @@ exports.updateOrderStatus = async (req, res) => {
             console.error("Error parsing user info:", error);
             return send.sendBadRequestResponse(res, "Invalid user information");
         }
-        
+
         // Update payment status if provided
         if (isPaid !== undefined) {
             const oldStatus = order.isPaid;
@@ -371,7 +510,7 @@ exports.updateOrderStatus = async (req, res) => {
                 }
             }
         }
-        
+
         // Update delivery status if provided
         if (isDelivered !== undefined) {
             const oldStatus = order.isDelivered;
@@ -379,7 +518,7 @@ exports.updateOrderStatus = async (req, res) => {
             // If marking as delivered, set the delivery date
             if (isDelivered && !order.deliveredAt) {
                 order.deliveredAt = Date.now();
-                
+
                 // Send delivery notification email
                 if (order.user && order.user.email) {
                     await sendDeliveryNotification(order.user.email, order._id);
@@ -407,9 +546,9 @@ exports.updateOrderStatus = async (req, res) => {
                 }
             }
         }
-        
+
         const updatedOrder = await order.save();
-        
+
         return send.sendResponse(res, 200, updatedOrder, "Order status updated successfully");
     } catch (error) {
         console.error("Order status update error:", error);
