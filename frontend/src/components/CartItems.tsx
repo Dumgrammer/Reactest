@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Success from "./modals/Success";
 import Failed from "./modals/Failed";
+import "../Styles/style1.css";
 
 interface CartItem {
     _id: string;
@@ -82,7 +83,7 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
 
                                 <div className="ml-4 flex flex-1 flex-col">
                                     <div>
-                                        <div className="flex justify-between text-base font-medium text-gray-900">
+                                        <div className="item-det-cont flex justify-between text-base font-medium text-gray-900">
                                             <h3>{item.name}</h3>
                                             <p className="ml-4">₱ {item.price * item.quantity}</p>
                                         </div>
