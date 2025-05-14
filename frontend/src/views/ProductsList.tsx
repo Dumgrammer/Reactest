@@ -398,6 +398,11 @@ export default function ProductsList() {
                             th { background-color: #f5f5f5; }
                             .header { text-align: center; margin-bottom: 20px; }
                             .timestamp { text-align: right; font-size: 12px; color: #666; }
+                            @media print {
+                                @page { margin: 0.5cm; }
+                                body { font-size: 12px; }
+                                th, td { padding: 4px; }
+                            }
                         </style>
                     </head>
                     <body>
@@ -439,54 +444,54 @@ export default function ProductsList() {
         <AdminLayout>
             <div className="px-6 py-4">
                 {/* Header Section */}
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800">Products Management</h1>
-                    <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-3">
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Products Management</h1>
+                    <div className="flex flex-wrap gap-2">
                         <button
                             type="button"
                             onClick={handleShowArchived}
-                            className={`flex items-center px-4 py-2 ${showArchived ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'} text-white rounded-lg transition-colors duration-200`}
+                            className={`flex items-center px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm ${showArchived ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'} text-white rounded-lg transition-colors duration-200`}
                         >
-                            {showArchived ? 'Show Active Products' : 'Show Archived Products'}
+                            {showArchived ? 'Active' : 'Archived'}
                         </button>
                         <button
                             type="button"
                             onClick={handleShowLogs}
-                            className={`flex items-center px-4 py-2 ${showLogs ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'} text-white rounded-lg transition-colors duration-200`}
+                            className={`flex items-center px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm ${showLogs ? 'bg-purple-500 hover:bg-purple-600' : 'bg-gray-500 hover:bg-gray-600'} text-white rounded-lg transition-colors duration-200`}
                         >
-                            {showLogs ? 'Show Products' : 'Show Logs'}
+                            {showLogs ? 'Products' : 'Logs'}
                         </button>
                         {!showArchived && !showLogs && (
                             <button
                                 type="button"
                                 onClick={handleOpenModal}
-                                className="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
+                                className="flex items-center px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
                             >
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                                 </svg>
-                                Add Product
+                                Add
                             </button>
                         )}
                     </div>
                 </div>
 
                 {/* Stock Legend */}
-                {!showArchived && (
-                    <div className="bg-white p-3 mb-4 rounded-lg shadow-sm">
-                        <h3 className="text-sm font-medium text-gray-700 mb-2">Stock Level Legend:</h3>
-                        <div className="flex flex-wrap gap-4">
+                {!showArchived && !showLogs && (
+                    <div className="bg-white p-2 sm:p-3 mb-4 rounded-lg shadow-sm">
+                        <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Stock Level:</h3>
+                        <div className="flex flex-wrap gap-2 sm:gap-4 text-xs">
                             <div className="flex items-center">
-                                <span className="w-4 h-4 inline-block bg-green-100 rounded-full mr-2"></span>
-                                <span className="text-xs text-gray-600">Above 100: Sufficient stock</span>
+                                <span className="w-3 h-3 sm:w-4 sm:h-4 inline-block bg-green-100 rounded-full mr-1 sm:mr-2"></span>
+                                <span className="text-xs text-gray-600">Above 100</span>
                             </div>
                             <div className="flex items-center">
-                                <span className="w-4 h-4 inline-block bg-yellow-100 rounded-full mr-2"></span>
-                                <span className="text-xs text-gray-600">Below 50: Low stock</span>
+                                <span className="w-3 h-3 sm:w-4 sm:h-4 inline-block bg-yellow-100 rounded-full mr-1 sm:mr-2"></span>
+                                <span className="text-xs text-gray-600">Below 50</span>
                             </div>
                             <div className="flex items-center">
-                                <span className="w-4 h-4 inline-block bg-red-100 rounded-full mr-2"></span>
-                                <span className="text-xs text-gray-600">Below 10: Critical stock</span>
+                                <span className="w-3 h-3 sm:w-4 sm:h-4 inline-block bg-red-100 rounded-full mr-1 sm:mr-2"></span>
+                                <span className="text-xs text-gray-600">Below 10</span>
                             </div>
                         </div>
                     </div>
@@ -512,12 +517,12 @@ export default function ProductsList() {
                             <div className="p-4 flex justify-end">
                                 <button
                                     onClick={handlePrintLogs}
-                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                                    className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
                                 >
-                                    <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 sm:w-5 sm:h-5 inline-block mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                     </svg>
-                                    Print Logs
+                                    Print
                                 </button>
                             </div>
                             <div className="overflow-x-auto">
@@ -834,18 +839,18 @@ export default function ProductsList() {
 
                                 {/* Mobile Card View */}
                                 <div className="md:hidden">
-                                    <div className="flex justify-between items-center py-2 px-4 border-b text-sm text-gray-500">
+                                    <div className="flex justify-between items-center py-2 px-3 border-b text-xs text-gray-500">
                                         <span>Page {currentPage} of {totalPages}</span>
-                                        <div className="flex gap-2">
+                                        <div className="flex gap-1">
                                             <button 
-                                                className="px-3 py-1 rounded-md bg-gray-100 disabled:opacity-50"
+                                                className="px-2 py-1 text-xs rounded-md bg-gray-100 disabled:opacity-50"
                                                 disabled={currentPage === 1}
                                                 onClick={() => handlePageChange(currentPage - 1)}
                                             >
-                                                Previous
+                                                Prev
                                             </button>
                                             <button 
-                                                className="px-3 py-1 rounded-md bg-gray-100 disabled:opacity-50"
+                                                className="px-2 py-1 text-xs rounded-md bg-gray-100 disabled:opacity-50"
                                                 disabled={currentPage === totalPages}
                                                 onClick={() => handlePageChange(currentPage + 1)}
                                             >
@@ -856,25 +861,25 @@ export default function ProductsList() {
                                     
                                     {currentItems.length > 0 ? (
                                         currentItems.map((product: any) => (
-                                            <div key={product._id} className="border-b last:border-b-0 p-4">
-                                                <div className="flex items-center mb-3">
-                                                    <div className="h-12 w-12 flex-shrink-0 mr-3">
+                                            <div key={product._id} className="border-b last:border-b-0 p-3">
+                                                <div className="flex items-center mb-2">
+                                                    <div className="h-10 w-10 flex-shrink-0 mr-2">
                                                         <img
-                                                            className="h-12 w-12 rounded-full object-cover"
+                                                            className="h-10 w-10 rounded-full object-cover"
                                                             src={product.image[0]}
                                                             alt={product.name}
                                                         />
                                                     </div>
-                                                    <div>
-                                                        <h3 className="text-md font-medium text-gray-900">{product.name}</h3>
-                                                        <div className="flex mt-1 space-x-2">
-                                                            <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${product.isNotArchived
+                                                    <div className="min-w-0 flex-1">
+                                                        <h3 className="text-sm font-medium text-gray-900 truncate">{product.name}</h3>
+                                                        <div className="flex mt-1 flex-wrap gap-1">
+                                                            <span className={`px-1.5 py-0.5 inline-flex text-xs leading-4 font-semibold rounded-full ${product.isNotArchived
                                                                 ? 'bg-green-100 text-green-800'
                                                                 : 'bg-red-100 text-red-800'
                                                                 }`}>
                                                                 {product.isNotArchived ? 'Active' : 'Archived'}
                                                             </span>
-                                                            <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${product.countInStock > 100
+                                                            <span className={`px-1.5 py-0.5 inline-flex text-xs leading-4 font-semibold rounded-full ${product.countInStock > 100
                                                                 ? 'bg-green-100 text-green-800'
                                                                 : product.countInStock >= 10
                                                                     ? 'bg-yellow-100 text-yellow-800'
@@ -886,20 +891,20 @@ export default function ProductsList() {
                                                     </div>
                                                 </div>
                                                 
-                                                <div className="grid grid-cols-2 gap-y-2 text-sm">
+                                                <div className="grid grid-cols-2 gap-y-1 text-xs">
                                                     <div>
                                                         <span className="text-gray-500">Price:</span>
                                                         <span className="ml-1 text-gray-900 font-medium">₱{product.price.toFixed(2)}</span>
                                                     </div>
                                                     <div>
                                                         <span className="text-gray-500">Category:</span>
-                                                        <span className="ml-1 text-gray-900">{product.category}</span>
+                                                        <span className="ml-1 text-gray-900 truncate">{product.category}</span>
                                                     </div>
                                                     <div>
                                                         <span className="text-gray-500">Created:</span>
                                                         <span className="ml-1 text-gray-900">
                                                             {new Date(product.createdAt).toLocaleDateString('en-US', {
-                                                                year: 'numeric',
+                                                                year: '2-digit',
                                                                 month: 'short',
                                                                 day: 'numeric'
                                                             })}
@@ -909,7 +914,7 @@ export default function ProductsList() {
                                                         <span className="text-gray-500">Updated:</span>
                                                         <span className="ml-1 text-gray-900">
                                                             {new Date(product.updatedAt).toLocaleDateString('en-US', {
-                                                                year: 'numeric',
+                                                                year: '2-digit',
                                                                 month: 'short',
                                                                 day: 'numeric'
                                                             })}
@@ -917,18 +922,18 @@ export default function ProductsList() {
                                                     </div>
                                                 </div>
                                                 
-                                                <div className="mt-3 flex justify-end space-x-2">
+                                                <div className="mt-2 flex justify-end space-x-2">
                                                     {product.isNotArchived ? (
                                                         <>
                                                             <button
                                                                 onClick={() => handleOpenEditModal(product)}
-                                                                className="px-3 py-1 rounded bg-blue-50 text-blue-600 text-sm"
+                                                                className="px-2 py-1 rounded bg-blue-50 text-blue-600 text-xs"
                                                             >
                                                                 Edit
                                                             </button>
                                                             <button
                                                                 onClick={() => handleOpenDeleteModal(product._id)}
-                                                                className="px-3 py-1 rounded bg-red-50 text-red-600 text-sm"
+                                                                className="px-2 py-1 rounded bg-red-50 text-red-600 text-xs"
                                                             >
                                                                 Archive
                                                             </button>
@@ -936,7 +941,7 @@ export default function ProductsList() {
                                                     ) : (
                                                         <button
                                                             onClick={() => handleOpenRestoreModal(product._id)}
-                                                            className="px-3 py-1 rounded bg-green-50 text-green-600 text-sm"
+                                                            className="px-2 py-1 rounded bg-green-50 text-green-600 text-xs"
                                                         >
                                                             Restore
                                                         </button>
@@ -1046,38 +1051,38 @@ export default function ProductsList() {
                 <Dialog open={isDeleteOpen} onClose={handleCloseDeleteModal} className="relative z-50">
                     <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
                     <div className="fixed inset-0 flex items-center justify-center p-4">
-                        <DialogPanel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl">
-                            <DialogTitle className="text-xl font-semibold text-gray-900 mb-4">
+                        <DialogPanel className="w-full max-w-sm rounded-lg bg-white p-4 sm:p-6 shadow-xl">
+                            <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                                 Archive Product
                             </DialogTitle>
-                            <Description className="text-sm text-gray-500 mb-4">
+                            <Description className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
                                 Are you sure you want to archive this product? It will no longer be visible to customers.
                             </Description>
                             <div className="mb-4">
-                                <label htmlFor="archiveReason" className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="archiveReason" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                     Reason for archiving
                                 </label>
                                 <textarea
                                     id="archiveReason"
                                     rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                                    placeholder="Please provide a reason for archiving this product..."
+                                    className="w-full px-2 sm:px-3 py-1 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                    placeholder="Please provide a reason..."
                                     value={archiveReason}
                                     onChange={(e) => setArchiveReason(e.target.value)}
                                     required
                                 />
                             </div>
-                            <div className="mt-6 flex justify-end gap-3">
+                            <div className="mt-4 sm:mt-6 flex justify-end gap-2 sm:gap-3">
                                 <button
                                     onClick={handleCloseDeleteModal}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                    className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={() => handleProductDeletion(deleteProductId!)}
                                     disabled={!archiveReason.trim()}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Archive
                                 </button>
@@ -1090,38 +1095,38 @@ export default function ProductsList() {
                 <Dialog open={isRestoreOpen} onClose={handleCloseRestoreModal} className="relative z-50">
                     <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
                     <div className="fixed inset-0 flex items-center justify-center p-4">
-                        <DialogPanel className="mx-auto max-w-sm rounded-lg bg-white p-6 shadow-xl">
-                            <DialogTitle className="text-xl font-semibold text-gray-900 mb-4">
+                        <DialogPanel className="w-full max-w-sm rounded-lg bg-white p-4 sm:p-6 shadow-xl">
+                            <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                                 Restore Product
                             </DialogTitle>
-                            <Description className="text-sm text-gray-500 mb-4">
+                            <Description className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
                                 Are you sure you want to restore this product? It will be visible to customers again.
                             </Description>
                             <div className="mb-4">
-                                <label htmlFor="restoreReason" className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="restoreReason" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                                     Reason for restoring
                                 </label>
                                 <textarea
                                     id="restoreReason"
                                     rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                                    placeholder="Please provide a reason for restoring this product..."
+                                    className="w-full px-2 sm:px-3 py-1 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+                                    placeholder="Please provide a reason..."
                                     value={restoreReason}
                                     onChange={(e) => setRestoreReason(e.target.value)}
                                     required
                                 />
                             </div>
-                            <div className="mt-6 flex justify-end gap-3">
+                            <div className="mt-4 sm:mt-6 flex justify-end gap-2 sm:gap-3">
                                 <button
                                     onClick={handleCloseRestoreModal}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                    className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={() => handleProductRestore(restoreProductId!)}
                                     disabled={!restoreReason.trim()}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Restore
                                 </button>

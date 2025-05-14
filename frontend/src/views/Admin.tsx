@@ -16,17 +16,17 @@ interface StatCardProps {
 }
 
 const StatCard = ({ title, value, subValue, description, color, percentage }: StatCardProps) => (
-    <div className={`relative overflow-hidden p-6 rounded-2xl bg-gradient-to-br ${color}`}>
+    <div className={`relative overflow-hidden p-4 sm:p-6 rounded-2xl bg-gradient-to-br ${color}`}>
         <div className="relative z-10">
-            <p className="text-sm font-medium text-white/80">{title}</p>
+            <p className="text-xs sm:text-sm font-medium text-white/80">{title}</p>
             <div className="mt-2 flex items-baseline gap-1">
-                <h3 className="text-2xl font-bold text-white">{value}</h3>
-                {subValue && <span className="text-sm text-white/70">({subValue})</span>}
+                <h3 className="text-lg sm:text-2xl font-bold text-white">{value}</h3>
+                {subValue && <span className="text-xs sm:text-sm text-white/70">({subValue})</span>}
             </div>
             {percentage && (
-                <p className="mt-1 text-sm font-medium text-white/90">{percentage}</p>
+                <p className="mt-1 text-xs sm:text-sm font-medium text-white/90">{percentage}</p>
             )}
-            <p className="mt-1 text-sm text-white/70">{description}</p>
+            <p className="mt-1 text-xs sm:text-sm text-white/70">{description}</p>
         </div>
         <div className="absolute right-0 top-0 h-full w-full">
             <svg className="h-full w-full text-white/5" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -109,12 +109,12 @@ export default function Admin() {
 
     return (
         <AdminLayout>
-            <div className="px-6 py-4 space-y-6">
-                <h2 className="text-xl font-bold text-gray-800">Sales Distribution</h2>
-                <p className="text-sm text-gray-600">This is all over Platform Sales Generated</p>
+            <div className="px-3 sm:px-6 py-4 space-y-4 sm:space-y-6">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800">Sales Distribution</h2>
+                <p className="text-xs sm:text-sm text-gray-600">This is all over Platform Sales Generated</p>
                 
                 {/* Top Stats */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <StatCard
                         title="Total Sales"
                         value={`₱${loading ? "..." : getTotalRevenue()}`}
@@ -144,29 +144,29 @@ export default function Admin() {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
                     {/* Revenue Trend */}
-                    <Card className="lg:col-span-2">
-                        <div className="p-4">
+                    <Card className="lg:col-span-2 overflow-hidden">
+                        <div className="p-2 sm:p-4">
                             <Statistics />
                         </div>
                     </Card>
 
                     {/* Payment Methods */}
-                    <Card>
-                        <div className="p-4">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold text-gray-800">Payment Methods</h3>
+                    <Card className="overflow-hidden">
+                        <div className="p-2 sm:p-4">
+                            <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-800">Payment Methods</h3>
                             </div>
-                            <div className="h-48 sm:h-64">
+                            <div className="h-40 sm:h-48 md:h-64">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
                                             data={getPaymentMethodData()}
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={40}
-                                            outerRadius={60}
+                                            innerRadius={30}
+                                            outerRadius={50}
                                             paddingAngle={5}
                                             dataKey="value"
                                         >
@@ -178,24 +178,24 @@ export default function Admin() {
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
-                            <div className="mt-4 space-y-3">
+                            <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
                                 {getPaymentMethodData().map((entry, index) => (
                                     <div key={entry.name} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
                                         <div className="flex items-center">
-                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center"
+                                            <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center"
                                                  style={{ backgroundColor: `${COLORS[index]}20`, color: COLORS[index] }}>
-                                                <i className={`fas ${index === 0 ? 'fa-money-bill' : 'fa-mobile-alt'} text-base sm:text-lg`}></i>
+                                                <i className={`fas ${index === 0 ? 'fa-money-bill' : 'fa-mobile-alt'} text-xs sm:text-sm md:text-base`}></i>
                                             </div>
                                             <div className="ml-2 sm:ml-3">
-                                                <p className="text-xs sm:text-sm font-medium text-gray-900">{entry.name}</p>
-                                                <p className="text-[10px] sm:text-xs text-gray-500">{entry.value} orders</p>
+                                                <p className="text-2xs sm:text-xs md:text-sm font-medium text-gray-900">{entry.name}</p>
+                                                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-500">{entry.value} orders</p>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <span className="text-xs sm:text-sm font-medium text-gray-900">
+                                            <span className="text-2xs sm:text-xs md:text-sm font-medium text-gray-900">
                                                 ₱{entry.total.toLocaleString()}
                                             </span>
-                                            <p className="text-[10px] sm:text-xs text-gray-500">
+                                            <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-500">
                                                 {((entry.total / getTotalRevenue()) * 100).toFixed(1)}% of total
                                             </p>
                                         </div>

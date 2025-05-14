@@ -21,12 +21,12 @@ type TimePeriod = 'day' | 'week' | 'month' | 'year';
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-4 rounded-lg shadow-lg border">
-        <p className="font-semibold text-gray-700 mb-1">{label}</p>
-        <p className="text-green-600 font-bold text-lg">
+      <div className="bg-white p-2 sm:p-4 rounded-lg shadow-lg border text-xs sm:text-sm">
+        <p className="font-semibold text-gray-700 mb-0.5 sm:mb-1 text-xs sm:text-sm">{label}</p>
+        <p className="text-green-600 font-bold text-sm sm:text-lg">
           ₱{payload[0].value.toLocaleString()}
         </p>
-        <p className="text-xs text-gray-500 mt-1">Revenue</p>
+        <p className="text-2xs sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Revenue</p>
       </div>
     );
   }
@@ -336,54 +336,56 @@ export default function Statistics() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6" ref={reportRef}>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6" ref={reportRef}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800">Revenue Trend</h2>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1">Revenue overview by {timePeriod}</p>
+          <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-800">Revenue Trend</h2>
+          <p className="text-2xs sm:text-xs md:text-sm text-gray-600 mt-1">Revenue overview by {timePeriod}</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 gap-2 sm:gap-4">
           <select
             value={timePeriod}
             onChange={(e) => setTimePeriod(e.target.value as TimePeriod)}
-            className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full text-xs sm:text-sm sm:w-auto px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="day">Daily</option>
             <option value="week">Weekly</option>
             <option value="month">Monthly</option>
             <option value="year">Yearly</option>
           </select>
-          <div className="grid grid-cols-2 sm:flex sm:items-center gap-4 sm:gap-6">
-            <div className="text-right">
-              <p className="text-xs sm:text-sm text-gray-600">Total Revenue</p>
-              <p className="text-sm sm:text-lg font-bold text-gray-900">₱{totalRevenue.toLocaleString()}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs sm:text-sm text-gray-600">Average per {timePeriod}</p>
-              <p className="text-sm sm:text-lg font-bold text-gray-900">₱{averageDaily.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs sm:text-sm text-gray-600">Total Stocks</p>
-              <p className="text-sm sm:text-lg font-bold text-gray-900">{totalStocks?.toLocaleString() || '0'} units</p>
-            </div>
-          </div>
           <button
             onClick={handlePrint}
-            className="w-full sm:w-auto flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+            className="w-full sm:w-auto flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
             </svg>
-            Print Report
+            Print
           </button>
         </div>
       </div>
 
-      <div className="h-[300px] sm:h-[400px]">
+      {/* Stats summary */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
+        <div className="p-2 sm:p-3 bg-blue-50 rounded-lg">
+          <p className="text-2xs sm:text-xs text-gray-600">Total Revenue</p>
+          <p className="text-xs sm:text-sm md:text-base font-bold text-gray-900">₱{totalRevenue.toLocaleString()}</p>
+        </div>
+        <div className="p-2 sm:p-3 bg-green-50 rounded-lg">
+          <p className="text-2xs sm:text-xs text-gray-600">Avg per {timePeriod}</p>
+          <p className="text-xs sm:text-sm md:text-base font-bold text-gray-900">₱{averageDaily.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+        </div>
+        <div className="p-2 sm:p-3 bg-yellow-50 rounded-lg">
+          <p className="text-2xs sm:text-xs text-gray-600">Total Stocks</p>
+          <p className="text-xs sm:text-sm md:text-base font-bold text-gray-900">{totalStocks?.toLocaleString() || '0'}</p>
+        </div>
+      </div>
+
+      <div className="h-[220px] sm:h-[250px] md:h-[300px] lg:h-[400px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
-            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            margin={{ top: 10, right: 5, left: -15, bottom: 0 }}
           >
             <defs>
               <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
@@ -394,15 +396,21 @@ export default function Statistics() {
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
             <XAxis 
               dataKey="name" 
-              tick={{ fill: '#4b5563', fontSize: 12 }}
+              tick={{ fill: '#4b5563', fontSize: 10 }}
               tickLine={{ stroke: '#4b5563' }}
               axisLine={{ stroke: '#e5e7eb' }}
+              height={40}
+              angle={-45}
+              textAnchor="end"
+              interval="preserveStartEnd"
+              minTickGap={10}
             />
             <YAxis 
-              tick={{ fill: '#4b5563', fontSize: 12 }}
+              tick={{ fill: '#4b5563', fontSize: 10 }}
               tickLine={{ stroke: '#4b5563' }}
               axisLine={{ stroke: '#e5e7eb' }}
               tickFormatter={(value) => `₱${value.toLocaleString()}`}
+              width={50}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area 
@@ -411,8 +419,8 @@ export default function Statistics() {
               stroke="#3b82f6"
               strokeWidth={2}
               fill="url(#colorTotal)"
-              dot={{ fill: '#3b82f6', r: 4 }}
-              activeDot={{ r: 6, fill: '#2563eb' }}
+              dot={{ fill: '#3b82f6', r: 3 }}
+              activeDot={{ r: 5, fill: '#2563eb' }}
             />
           </AreaChart>
         </ResponsiveContainer>

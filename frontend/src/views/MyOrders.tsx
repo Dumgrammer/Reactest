@@ -33,6 +33,9 @@ const MyOrders: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [viewingDetails, setViewingDetails] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [ordersPerPage] = useState<number>(5);
 
   const navigate = useNavigate();
 
@@ -42,7 +45,11 @@ const MyOrders: React.FC = () => {
       try {
         const result = await fetchUserOrders();
         if (result.success) {
-          setOrders(result.orders);
+          // Sort orders by createdAt date in descending order (newest first)
+          const sortedOrders = [...result.orders].sort((a, b) => 
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          setOrders(sortedOrders);
         } else {
           setError(result.message || 'Failed to load orders');
         }
@@ -262,8 +269,10 @@ const MyOrders: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {orders.map((order) => (
-                    <tr key={order._id}>
+                  {orders
+                    .slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage)
+                    .map((order) => (
+                    <tr key={order._id} >
                       <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-500">{order._id.substring(0, 8)}...</td>
                       <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-500">{formatDate(order.createdAt)}</td>
                       <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-xs md:text-sm text-gray-500">₱{order.totalPrice.toFixed(2)}</td>
@@ -283,6 +292,41 @@ const MyOrders: React.FC = () => {
                 </tbody>
               </table>
             </div>
+            
+            {/* Pagination */}
+            {orders.length > ordersPerPage && (
+              <div className="px-3 md:px-6 py-4 flex justify-between items-center border-t border-gray-200">
+                <div className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{Math.min(orders.length, (currentPage - 1) * ordersPerPage + 1)}</span> to{" "}
+                  <span className="font-medium">{Math.min(orders.length, currentPage * ordersPerPage)}</span> of{" "}
+                  <span className="font-medium">{orders.length}</span> orders
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded ${
+                      currentPage === 1 
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                        : "bg-green-100 text-green-700 hover:bg-green-200"
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(orders.length / ordersPerPage)))}
+                    disabled={currentPage >= Math.ceil(orders.length / ordersPerPage)}
+                    className={`px-3 py-1 rounded ${
+                      currentPage >= Math.ceil(orders.length / ordersPerPage)
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-green-100 text-green-700 hover:bg-green-200"
+                    }`}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
