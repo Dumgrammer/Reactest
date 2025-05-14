@@ -3,6 +3,7 @@ import { fetchUserOrders, fetchUserOrderById } from '../Actions/Order';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../Layout/Layouts';
 import CoopLoc from '../components/modals/CoopLoc';
+import "../Styles/style1.css";
 
 interface OrderItem {
   _id: string;
@@ -227,8 +228,8 @@ const MyOrders: React.FC = () => {
           onConfirm={closeModal}
         />
 
-      <div className="container mx-auto px-4 py-8">
-        <div className='flex justify-between items-center'>
+      <div className="orders-cont container mx-auto px-4 py-8">
+        <div className='title flex justify-between items-center'>
         <h1 className="text-2xl font-bold mb-6">My Orders</h1>
 
         {/* Button for Coop Location modal */}
@@ -249,7 +250,7 @@ const MyOrders: React.FC = () => {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="overflow-x-auto -mx-4 md:mx-0">
+            <div className="overflow-x-auto md:mx-0">
               <table className="min-w-full">
                 <thead className="bg-gray-50">
                   <tr>
