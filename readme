@@ -1,24 +1,24 @@
-# 🎓 Gordon College Campus Cart
+# Gordon College Campus Cart
 
 **Gordon College Campus Cart** is an easy-to-use online platform for browsing, ordering, and managing products within the Gordon College campus. Shop conveniently and efficiently—whether you’re a student or staff!
 
-🌐 **Live Demo:** [gccampuscart.online](https://gccampuscart.online)
+**Live Demo:** [gccampuscart.online](https://gccampuscart.online)
 
 ---
 
-## ✨ Features
+## Features
 
-- 🛒 User registration and email verification
-- 🔍 Product browsing, search, and ordering
-- 🛍️ Shopping cart with real-time updates
-- 💸 Checkout with GCash or Cash on Pickup
-- 📦 Order tracking and order history
-- 🛠️ Admin dashboard for managing users, products, and orders
-- 📧 Email notifications for account and order updates
+- User registration and email verification
+- Product browsing, search, and ordering
+- Shopping cart with real-time updates
+- Checkout with GCash or Cash on Pickup
+- Order tracking and order history
+- Admin dashboard for managing users, products, and orders
+- Email notifications for account and order updates
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 api/        # Node.js/Express backend (REST API)
@@ -27,7 +27,7 @@ frontend/   # React frontend application
 
 ---
 
-## 🚀 Getting Started (Development)
+## Getting Started (Development)
 
 ### Prerequisites
 
@@ -56,7 +56,269 @@ _Frontend runs on [http://localhost:3000](http://localhost:3000)._
 
 ---
 
-## 🌍 Deployment
+## API Endpoints
+
+The backend provides a RESTful API for user, product, order, and log management.
+
+### User Routes
+
+- POST `/api/users/register` — Register a new user
+- POST `/api/users/login` — User login
+- POST `/api/users/verify-email` — Verify user email
+- POST `/api/users/resend-verification` — Resend verification code
+- GET `/api/users/profile` — Get user profile (auth required)
+- PUT `/api/users/profile` — Update user profile (auth required)
+- GET `/api/users/auth/google` — Google OAuth login
+
+### Product Routes
+
+- GET `/api/products` — List all products
+- GET `/api/products/:id` — Get product details
+- GET `/api/products/search` — Search products
+- POST `/api/products/createproduct` — Create product (admin)
+- PATCH `/api/products/:id` — Update product (admin)
+- DELETE `/api/products/:id` — Archive product (admin)
+- PATCH `/api/products/restore/:id` — Restore product (admin)
+
+### Order Routes
+
+- GET `/api/orders` — List all orders (admin)
+- POST `/api/orders` — Place an order
+- GET `/api/orders/:id` — Get order details
+- PUT `/api/orders/:id/payment` — Update payment status
+- PUT `/api/orders/:id/status` — Update delivery status
+- GET `/api/orders/myorders/:id` — Get user’s orders
+- GET `/api/orders/myorders/:userId/:orderId` — Get specific user order
+
+### Logs
+
+- GET `/api/logs` — Get all logs (admin)
+
+---
+
+## Using the API with Postman
+
+You can test all backend endpoints using [Postman](https://www.postman.com/). Below are example requests for each main functionality.
+
+---
+
+### User Endpoints
+
+#### Register a User
+- POST `https://gccampuscart.online/api/users/register`
+- Body (JSON):
+  ```json
+  {
+    "firstname": "Juan",
+    "middlename": "Santos",
+    "lastname": "Dela Cruz",
+    "email": "juan@example.com",
+    "password": "yourpassword",
+    "confirmationpass": "yourpassword"
+  }
+  ```
+
+#### Verify Email
+- POST `https://gccampuscart.online/api/users/verify-email`
+- Body (JSON):
+  ```json
+  {
+    "email": "juan@example.com",
+    "verificationCode": "123456"
+  }
+  ```
+
+#### Resend Verification Code
+- POST `https://gccampuscart.online/api/users/resend-verification`
+- Body (JSON):
+  ```json
+  {
+    "email": "juan@example.com"
+  }
+  ```
+
+#### Login
+- POST `https://gccampuscart.online/api/users/login`
+- Body (JSON):
+  ```json
+  {
+    "email": "juan@example.com",
+    "password": "yourpassword"
+  }
+  ```
+
+#### Get User Profile
+- GET `https://gccampuscart.online/api/users/profile`
+- Headers:  
+  `Authorization: Bearer <your_token>`
+
+#### Update User Profile
+- PUT `https://gccampuscart.online/api/users/profile`
+- Headers:  
+  `Authorization: Bearer <your_token>`
+- Body (JSON):
+  ```json
+  {
+    "firstname": "Juan",
+    "middlename": "Santos",
+    "lastname": "Dela Cruz",
+    "email": "juan@example.com",
+    "password": "newpassword",
+    "oldPassword": "yourpassword",
+    "address": {
+      "street": "123 Main St",
+      "city": "Olongapo",
+      "postalCode": "2200",
+      "country": "Philippines"
+    }
+  }
+  ```
+
+#### Google OAuth Login
+- GET `https://gccampuscart.online/api/users/auth/google`
+- _Follow the OAuth flow in your browser._
+
+---
+
+### Product Endpoints
+
+#### List All Products
+- GET `https://gccampuscart.online/api/products`
+
+#### Get Product Details
+- GET `https://gccampuscart.online/api/products/<product_id>`
+
+#### Search Products
+- GET `https://gccampuscart.online/api/products/search?keyword=shirt`
+
+#### Create Product (Admin)
+- POST `https://gccampuscart.online/api/products/createproduct`
+- Headers:  
+  `Authorization: Bearer <admin_token>`
+- Body:  
+  Form-data (for images and fields, see API docs)
+
+#### Update Product (Admin)
+- PATCH `https://gccampuscart.online/api/products/<product_id>`
+- Headers:  
+  `Authorization: Bearer <admin_token>`
+- Body:  
+  Form-data (for images and fields, see API docs)
+
+#### Archive Product (Admin)
+- DELETE `https://gccampuscart.online/api/products/<product_id>`
+- Headers:  
+  `Authorization: Bearer <admin_token>`
+- Body (JSON):
+  ```json
+  {
+    "reason": "Outdated product",
+    "userId": "<admin_user_id>",
+    "userInfo": "{\"data\":{\"name\":\"Admin Name\",\"email\":\"admin@example.com\"}}"
+  }
+  ```
+
+#### Restore Product (Admin)
+- PATCH `https://gccampuscart.online/api/products/restore/<product_id>`
+- Headers:  
+  `Authorization: Bearer <admin_token>`
+- Body (JSON):
+  ```json
+  {
+    "reason": "Restocking",
+    "userId": "<admin_user_id>",
+    "userInfo": "{\"data\":{\"name\":\"Admin Name\",\"email\":\"admin@example.com\"}}"
+  }
+  ```
+
+---
+
+### Order Endpoints
+
+#### List All Orders (Admin)
+- GET `https://gccampuscart.online/api/orders`
+- Headers:  
+  `Authorization: Bearer <admin_token>`
+
+#### Place an Order
+- POST `https://gccampuscart.online/api/orders`
+- Headers:  
+  `Authorization: Bearer <your_token>`
+- Body (JSON):
+  ```json
+  {
+    "orderItems": [
+      {
+        "product": "<product_id>",
+        "qty": 1
+      }
+    ],
+    "shippingAddress": {
+      "address": "123 Main St",
+      "city": "Olongapo",
+      "postalCode": "2200",
+      "country": "Philippines"
+    },
+    "paymentMethod": "gcash",
+    "totalPrice": 500,
+    "user": "<your_user_id>"
+  }
+  ```
+
+#### Get Order Details
+- GET `https://gccampuscart.online/api/orders/<order_id>`
+- Headers:  
+  `Authorization: Bearer <your_token>`
+
+#### Update Payment Status
+- PUT `https://gccampuscart.online/api/orders/<order_id>/payment`
+- Headers:  
+  `Authorization: Bearer <admin_token>`
+- Body (JSON):
+  ```json
+  {
+    "isPaid": true
+  }
+  ```
+
+#### Update Delivery Status
+- PUT `https://gccampuscart.online/api/orders/<order_id>/status`
+- Headers:  
+  `Authorization: Bearer <admin_token>`
+- Body (JSON):
+  ```json
+  {
+    "isDelivered": true,
+    "userInfo": "{\"data\":{\"name\":\"Admin Name\",\"email\":\"admin@example.com\"}}"
+  }
+  ```
+
+#### Get User’s Orders
+- GET `https://gccampuscart.online/api/orders/myorders/<user_id>`
+- Headers:  
+  `Authorization: Bearer <your_token>`
+
+#### Get Specific User Order
+- GET `https://gccampuscart.online/api/orders/myorders/<user_id>/<order_id>`
+- Headers:  
+  `Authorization: Bearer <your_token>`
+
+---
+
+### Logs (Admin)
+
+#### Get All Logs
+- GET `https://gccampuscart.online/api/logs`
+- Headers:  
+  `Authorization: Bearer <admin_token>`
+
+---
+
+> Replace `<your_token>`, `<admin_token>`, `<product_id>`, `<order_id>`, and `<user_id>` with actual values from your login and queries.
+
+---
+
+## Deployment
 
 The application is deployed on a custom Linux server. The domain was purchased from Hostinger and DNS is managed via Cloudflare.
 
@@ -107,7 +369,7 @@ The application is deployed on a custom Linux server. The domain was purchased f
 
 ---
 
-## 📝 Usage
+## Usage
 
 - Visit [gccampuscart.online](https://gccampuscart.online)
 - Register or log in to your account
@@ -116,10 +378,10 @@ The application is deployed on a custom Linux server. The domain was purchased f
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-> _Developed for Gordon College campus use._
+_Developed for Gordon College campus use._
