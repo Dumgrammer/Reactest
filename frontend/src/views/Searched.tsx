@@ -232,7 +232,6 @@ function Searched() {
                   onChange={handleSearchInputChange}
                   className="search-btn block w-full rounded-md bg-gray-50 p-4 pr-[60px] ps-7 text-sm text-gray-900 focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-green-500 dark:focus:ring-green-500"
                   placeholder="Search Products..."
-                  required
                 />
                 <button
                   type="submit"
