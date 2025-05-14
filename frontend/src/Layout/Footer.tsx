@@ -1,3 +1,5 @@
+import "../Styles/style1.css";
+
 function Footer() {
   return (
     <footer className="m-4 rounded-lg bg-white shadow-sm dark:bg-gray-800">
