@@ -26,26 +26,41 @@ function Product() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const getProducts = async () => {
-      setLoading(true);
-      const response = await fetchProducts();
-      setLoading(false);
+  const fetchProductsData = async () => {
+    setLoading(true);
+    const response = await fetchProducts();
+    setLoading(false);
 
-      if (!response.success) {
-        setError(response.message);
-      } else {
-        setProducts(response.products.data);
-      }
+    if (!response.success) {
+      setError(response.message);
+    } else {
+      setProducts(response.products.data);
+    }
+  };
+
+  useEffect(() => {
+    fetchProductsData();
+  }, []);
+
+  // Listen for cart updates to refresh products
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      fetchProductsData();
     };
-    getProducts();
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
   }, []);
 
   // Function to determine stock status display
-  const getStockStatusDisplay = (stockCount: number) => {
-    if (stockCount > 10) {
+  const getStockStatusDisplay = (product: ProductItem) => {
+    const totalStock = product.inventory?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+    
+    if (totalStock > 10) {
       return <span className="text-xs text-green-600">In Stock</span>;
-    } else if (stockCount > 0) {
+    } else if (totalStock > 0) {
       return <span className="text-xs text-yellow-600">Low Stock</span>;
     } else {
       return <span className="text-xs text-red-600">Out of Stock</span>;
@@ -109,7 +124,7 @@ function Product() {
                           <span className="font-bold text-green-600">
                             ₱{product.price.toFixed(2)}
                           </span>
-                          {getStockStatusDisplay(product.countInStock)}
+                          {getStockStatusDisplay(product)}
                         </div>
 
                         {/* Size Availability */}

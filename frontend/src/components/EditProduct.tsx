@@ -1,6 +1,7 @@
 import React, { useState, KeyboardEvent, useEffect } from "react";
 import { updateProductAction } from "../Actions/Product";
 import InventoryManager from "./InventoryManager";
+import { productDetailAction } from "../Actions/Product";
 
 interface InventoryItem {
   size: string;
@@ -91,6 +92,26 @@ const EditProductModal: React.FC<ModalProps> = ({
       setInventory(newInventory);
     }
   }, [sizes, types]);
+
+  // Listen for cart updates to refresh product data
+  useEffect(() => {
+    const handleCartUpdate = async () => {
+      try {
+        const response = await productDetailAction(product._id);
+        if (response.success) {
+          const updatedProduct = response.product.data;
+          setInventory(updatedProduct.inventory || []);
+        }
+      } catch (error) {
+        console.error("Error refreshing product data:", error);
+      }
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, [product._id]);
 
   // For new image preview
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
