@@ -119,15 +119,25 @@ exports.orderProduct = async (req, res) => {
                 return send.sendNotFoundResponse(res, `Product with ID ${item.product} not available`);
             }
 
-            // Check inventory for specific size and type
-            const inventoryItem = existingProduct.inventory.find(
-                inv => inv.size === item.size && inv.type === item.type
-            );
-
-            if (!inventoryItem || inventoryItem.quantity < parseInt(item.qty)) {
-                return send.sendBadRequestResponse(res, 
-                    `Not enough stock for ${existingProduct.name} (${item.size}, ${item.type})`
+            // If product doesn't have size/type, check countInStock directly
+            if (!existingProduct.size?.length && !existingProduct.type?.length) {
+                if (existingProduct.countInStock < parseInt(item.qty)) {
+                    return send.sendBadRequestResponse(res, 
+                        `Not enough stock for ${existingProduct.name}`
+                    );
+                }
+            } else {
+                // Check inventory for specific size and type
+                const inventoryItem = existingProduct.inventory.find(
+                    inv => (!item.size || inv.size === item.size) && 
+                           (!item.type || inv.type === item.type)
                 );
+
+                if (!inventoryItem || inventoryItem.quantity < parseInt(item.qty)) {
+                    return send.sendBadRequestResponse(res, 
+                        `Not enough stock for ${existingProduct.name}${item.size ? ` (Size: ${item.size})` : ''}${item.type ? ` (Type: ${item.type})` : ''}`
+                    );
+                }
             }
         }
 
@@ -147,20 +157,26 @@ exports.orderProduct = async (req, res) => {
         for (const item of orderItems) {
             const product = await Product.findById(item.product);
             if (product) {
-                // Find and update the specific inventory item
-                const inventoryItem = product.inventory.find(
-                    inv => inv.size === item.size && inv.type === item.type
-                );
-                
-                if (inventoryItem) {
-                    inventoryItem.quantity -= parseInt(item.qty);
-                }
+                // If product doesn't have size/type, update countInStock directly
+                if (!product.size?.length && !product.type?.length) {
+                    product.countInStock -= parseInt(item.qty);
+                } else {
+                    // Find and update the specific inventory item
+                    const inventoryItem = product.inventory.find(
+                        inv => (!item.size || inv.size === item.size) && 
+                               (!item.type || inv.type === item.type)
+                    );
+                    
+                    if (inventoryItem) {
+                        inventoryItem.quantity -= parseInt(item.qty);
+                    }
 
-                // Update total stock count
-                product.countInStock = product.inventory.reduce(
-                    (sum, inv) => sum + inv.quantity, 
-                    0
-                );
+                    // Update total stock count
+                    product.countInStock = product.inventory.reduce(
+                        (sum, inv) => sum + inv.quantity, 
+                        0
+                    );
+                }
 
                 await product.save();
             }
@@ -197,20 +213,26 @@ exports.orderPayment = async (req, res) => {
         for (const item of order.orderItems) {
             const product = await Product.findById(item.product);
             if (product) {
-                // Find and update the specific inventory item
-                const inventoryItem = product.inventory.find(
-                    inv => inv.size === item.size && inv.type === item.type
-                );
-                
-                if (inventoryItem) {
-                    inventoryItem.quantity -= parseInt(item.qty);
-                }
+                // If product doesn't have size/type, update countInStock directly
+                if (!product.size?.length && !product.type?.length) {
+                    product.countInStock -= parseInt(item.qty);
+                } else {
+                    // Find and update the specific inventory item
+                    const inventoryItem = product.inventory.find(
+                        inv => (!item.size || inv.size === item.size) && 
+                               (!item.type || inv.type === item.type)
+                    );
+                    
+                    if (inventoryItem) {
+                        inventoryItem.quantity -= parseInt(item.qty);
+                    }
 
-                // Update total stock count
-                product.countInStock = product.inventory.reduce(
-                    (sum, inv) => sum + inv.quantity, 
-                    0
-                );
+                    // Update total stock count
+                    product.countInStock = product.inventory.reduce(
+                        (sum, inv) => sum + inv.quantity, 
+                        0
+                    );
+                }
 
                 await product.save();
             }
