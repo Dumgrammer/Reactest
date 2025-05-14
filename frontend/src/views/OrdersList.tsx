@@ -246,7 +246,8 @@ export default function OrdersList() {
                     ) : (
                         <>
                             <div className="overflow-x-auto">
-                                <table className="w-full">
+                                {/* Table view for desktop */}
+                                <table className="w-full hidden md:table">
                                     <thead>
                                         <tr className="bg-gray-50 border-b">
                                             <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
@@ -313,11 +314,68 @@ export default function OrdersList() {
                                         )}
                                     </tbody>
                                 </table>
+
+                                {/* Card view for mobile */}
+                                <div className="grid grid-cols-1 gap-4 md:hidden">
+                                    {currentOrders.length > 0 ? (
+                                        currentOrders.map((order: any) => (
+                                            <div key={order._id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            #{order._id.slice(-6).toUpperCase()}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500 mt-1">
+                                                            {formatDate(order.createdAt)}
+                                                        </div>
+                                                    </div>
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                        getStatusColor(order.isPaid, order.isDelivered)
+                                                    }`}>
+                                                        {getStatusText(order.isPaid, order.isDelivered)}
+                                                    </span>
+                                                </div>
+                                                
+                                                <div className="mt-3 border-t pt-3">
+                                                    <div className="flex justify-between">
+                                                        <div>
+                                                            <div className="text-sm text-gray-900">
+                                                                {formatUserName(order.user)}
+                                                            </div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {order.shippingAddress.city || 'N/A'}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            ₱{order.totalPrice.toFixed(2)}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="mt-4">
+                                                    <button
+                                                        onClick={() => handleViewDetails(order)}
+                                                        className="w-full py-2 px-4 border border-blue-500 rounded-md text-sm font-medium text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                    >
+                                                        View Details
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center">
+                                            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                            </svg>
+                                            <p className="mt-2 text-sm">No orders found.</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Pagination Controls */}
                             {totalPages > 1 && (
-                                <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                                <div className="px-4 sm:px-6 py-4 flex items-center justify-between border-t border-gray-200">
                                     <div className="flex-1 flex justify-between sm:hidden">
                                         <button
                                             onClick={() => handlePageChange(currentPage - 1)}
@@ -326,6 +384,9 @@ export default function OrdersList() {
                                         >
                                             Previous
                                         </button>
+                                        <span className="text-sm text-gray-700">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
                                         <button
                                             onClick={() => handlePageChange(currentPage + 1)}
                                             disabled={currentPage === totalPages}
@@ -392,14 +453,14 @@ export default function OrdersList() {
                 <Dialog open={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} className="relative z-50">
                     <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
                     <div className="fixed inset-0 flex items-center justify-center p-4">
-                        <DialogPanel className="mx-auto max-w-3xl w-full rounded-lg bg-white p-6 shadow-xl">
+                        <DialogPanel className="mx-auto w-full max-w-3xl rounded-lg bg-white p-4 sm:p-6 shadow-xl overflow-y-auto max-h-[90vh]">
                             <DialogTitle className="text-xl font-semibold text-gray-900 mb-4">
                                 Order Details
                             </DialogTitle>
                             {selectedOrder && (
                                 <div className="space-y-4">
                                     {/* Order Info */}
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <h3 className="text-sm font-medium text-gray-500">Order ID</h3>
                                             <p className="mt-1">#{selectedOrder._id.slice(-6).toUpperCase()}</p>
@@ -413,7 +474,7 @@ export default function OrdersList() {
                                     {/* Customer Info */}
                                     <div className="border-t pt-4">
                                         <h3 className="text-sm font-medium text-gray-500 mb-2">Customer Information</h3>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <p className="text-sm text-gray-900">{formatUserName(selectedOrder.user)}</p>
                                                 <p className="text-sm text-gray-500">{formatAddress(selectedOrder.shippingAddress)}</p>
@@ -434,7 +495,7 @@ export default function OrdersList() {
                                             </div>
                                         )}
                                         
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             {/* Payment Status */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -496,17 +557,17 @@ export default function OrdersList() {
                                     {/* Order Items */}
                                     <div className="border-t pt-4">
                                         <h3 className="text-sm font-medium text-gray-500 mb-2">Order Items</h3>
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                             {selectedOrder.orderItems.map((item: any, index: number) => (
-                                                <div key={index} className="flex items-center justify-between">
-                                                    <div className="flex items-center">
+                                                <div key={index} className="flex flex-wrap sm:flex-nowrap items-center justify-between">
+                                                    <div className="flex items-center w-full sm:w-auto">
                                                         <img src={item.image} alt={item.name} className="h-10 w-10 rounded object-cover" />
-                                                        <div className="ml-4">
+                                                        <div className="ml-4 flex-1">
                                                             <p className="text-sm font-medium text-gray-900">{item.name}</p>
                                                             <p className="text-sm text-gray-500">Qty: {item.qty}</p>
                                                         </div>
                                                     </div>
-                                                    <p className="text-sm font-medium text-gray-900">₱{item.price}</p>
+                                                    <p className="text-sm font-medium text-gray-900 mt-2 sm:mt-0 w-full sm:w-auto text-right">₱{item.price}</p>
                                                 </div>
                                             ))}
                                         </div>
