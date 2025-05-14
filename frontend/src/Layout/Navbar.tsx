@@ -4,8 +4,10 @@ import Dropdown from "./Dropdown";
 import CheckOut from "../views/Checkout";
 import { useNavigate } from "react-router-dom";
 import "../Styles/style1.css";
+import { useLocation } from 'react-router-dom';
 
 function Navbar() {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [userInfo, setUserInfo] = useState(() => {
     return JSON.parse(localStorage.getItem("userInfo") || "null");
@@ -84,6 +86,7 @@ function Navbar() {
           ) : (
             <>
               <Dropdown />
+              {location.pathname !== '/payment' && (
               <button
                 onClick={handleCartClick}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-lg p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
@@ -104,8 +107,11 @@ function Navbar() {
                 </svg>
                 <span>{totalItems}</span>
               </button>
+              )}
 
-              <CheckOut open={open} setOpen={setOpen} />
+              {location.pathname !== '/payment' && (
+                <CheckOut open={open} setOpen={setOpen} />
+              )}
             </>
           )}
         </div>
