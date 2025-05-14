@@ -1,0 +1,140 @@
+# Gordon College Campus Cart
+
+Gordon College Campus Cart (Campus Cart) is a web-based platform for product ordering, management, and delivery within the Gordon College campus. It features a modern React frontend and a Node.js/Express backend, providing a seamless experience for both users and administrators.
+
+**Live Demo:** [https://gccampuscart.online](https://gccampuscart.online)
+
+---
+
+## Features
+
+- User registration and email verification
+- Product browsing, search, and ordering
+- Shopping cart with real-time updates
+- Checkout with GCash or Cash on Pickup
+- Order tracking and order history
+- Admin dashboard for managing users, products, and orders
+- Email notifications for account and order updates
+
+---
+
+## Project Structure
+
+```
+api/        # Node.js/Express backend (REST API)
+frontend/   # React frontend application
+```
+
+---
+
+## Getting Started (Development)
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- npm
+- MongoDB
+
+### Backend Setup (`api/`)
+
+1. Navigate to the backend folder:
+    ```sh
+    cd api
+    ```
+2. Install dependencies:
+    ```sh
+    npm install
+    ```
+3. Configure environment variables:
+    - Copy `.env.example` to `.env` and update the values.
+4. Start the backend server:
+    ```sh
+    npm start
+    ```
+    The backend runs on [http://localhost:8080](http://localhost:8080) by default.
+
+### Frontend Setup (`frontend/`)
+
+1. Navigate to the frontend folder:
+    ```sh
+    cd frontend
+    ```
+2. Install dependencies:
+    ```sh
+    npm install
+    ```
+3. Start the frontend development server:
+    ```sh
+    npm start
+    ```
+    The frontend runs on [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Deployment
+
+The application is deployed on a custom Linux server. The domain was purchased from Hostinger and DNS is managed via Cloudflare.
+
+### Deployment Steps
+
+1. **Provision a Linux Server**
+   - Set up a Linux server (e.g., Ubuntu) with SSH access.
+   - Install Node.js, npm, and MongoDB.
+
+2. **Clone the Repository**
+   ```sh
+   git clone <your-repo-url>
+   cd <project-folder>
+   ```
+
+3. **Configure Environment Variables**
+   - Set up `.env` files for both `api/` and `frontend/` with production values.
+
+4. **Install Dependencies**
+   ```sh
+   cd api && npm install
+   cd ../frontend && npm install
+   ```
+
+5. **Build the Frontend**
+   ```sh
+   npm run build
+   ```
+   - The production build will be in `frontend/build`.
+
+6. **Serve the Frontend**
+   - Use a web server like Nginx or Apache to serve the static files from `frontend/build`.
+
+7. **Run the Backend**
+   - Use a process manager like PM2 to keep the Node.js backend running:
+     ```sh
+     pm2 start server.js --name campus-cart-api
+     ```
+
+8. **Domain and SSL**
+   - Purchase your domain from Hostinger.
+   - Point your domain’s DNS to Cloudflare.
+   - Set up DNS records in Cloudflare to point to your server’s IP.
+   - Use Cloudflare’s SSL/TLS features for HTTPS.
+
+9. **(Optional) Set Up Reverse Proxy**
+   - Configure Nginx or Apache as a reverse proxy to forward API requests to the backend and serve the frontend.
+
+---
+
+## Usage
+
+- Visit [https://gccampuscart.online](https://gccampuscart.online) to use the deployed application.
+- Register or log in to your account.
+- Browse products, add items to your cart, and proceed to checkout.
+- Track your orders and receive notifications.
+
+---
+
+## License
+
+This project is licensed under the MIT License.
+
+---
+
+*Developed for Gordon College campus use.*
