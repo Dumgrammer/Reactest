@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../Layout/Layouts";
+import "../../Styles/style1.css";
 import {
   userRegistration,
   RegistrationData,
@@ -160,7 +161,7 @@ export default function Register() {
           <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-gray-900"></div>
         </div>
       ) : (
-        <div className="mid-flex">
+        <div className="mid-flex register-cont">
           <form
             className="mx-auto flex max-w-md flex-col items-center"
             onSubmit={submitForm}
