@@ -465,8 +465,8 @@ export const updateOrderStatus = async (orderId: string, statusType: 'payment' |
 
         // Construct the payload based on status type
         const payload = statusType === 'payment' 
-            ? { isPaid: value, paidAt: value ? new Date().toISOString() : null }
-            : { isDelivered: value, deliveredAt: value ? new Date().toISOString() : null };
+            ? { isPaid: value, userInfo: JSON.stringify(userInfo) }
+            : { isDelivered: value, userInfo: JSON.stringify(userInfo) };
 
         const { data } = await axios.put(
             `${baseUrl}/api/orders/${orderId}/status`,

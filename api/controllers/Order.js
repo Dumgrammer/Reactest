@@ -1,6 +1,103 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const send = require('../utils/Response');
+const User = require('../models/User');
+const Logs = require('../models/Logs');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+        user: "appgradesolutionsgcccsaco@gmail.com",
+        pass: "eyqq yjeo ycqo peat",
+    },
+    logger: true,
+    debug: true,
+});
+
+// Function to send delivery notification email
+const sendDeliveryNotification = async (userEmail, orderId) => {
+    try {
+        const mailOptions = {
+            from: '"Your Store" <appgradesolutionsgcccsaco@gmail.com>',
+            to: userEmail,
+            subject: "Your Order is Ready for Pickup!",
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .container {
+                            background-color: #f9f9f9;
+                            border-radius: 5px;
+                            padding: 20px;
+                            margin-top: 20px;
+                            margin-bottom: 20px;
+                        }
+                        .header {
+                            text-align: center;
+                            margin-bottom: 30px;
+                        }
+                        .header h1 {
+                            color: #2c3e50;
+                            margin-bottom: 10px;
+                        }
+                        .order-id {
+                            background-color: #2c3e50;
+                            color: white;
+                            padding: 15px;
+                            border-radius: 5px;
+                            text-align: center;
+                            font-size: 18px;
+                            font-weight: bold;
+                            margin: 20px 0;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 30px;
+                            font-size: 12px;
+                            color: #666;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>Order Ready for Pickup!</h1>
+                        </div>
+                        <p>Dear Valued Customer,</p>
+                        <p>We are pleased to inform you that your order is now ready for pickup!</p>
+                        <div class="order-id">
+                            Order ID: #${orderId.toString().slice(-6).toUpperCase()}
+                        </div>
+                        <p>Please visit our store to collect your order. Don't forget to bring a valid ID for verification.</p>
+                        <p>Thank you for choosing our store!</p>
+                        <div class="footer">
+                            <p>This is an automated message, please do not reply to this email.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        console.error("Error sending delivery notification:", error);
+        return false;
+    }
+};
 
 exports.orderProduct = async (req, res) => {
     try {
@@ -92,7 +189,8 @@ exports.orderPayment = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
     try {
-        const existingOrder = await Order.find({});
+        const existingOrder = await Order.find({})
+            .populate('user', 'firstname middlename lastname email');
 
         if (!existingOrder) {
             return send.sendNotFoundResponse(res, "No orders have been placed yet");
@@ -168,30 +266,88 @@ exports.getUserOrderById = async (req, res) => {
 
 exports.updateOrderStatus = async (req, res) => {
     try {
-        const { isPaid, isDelivered } = req.body;
+        const { isPaid, isDelivered, userInfo } = req.body;
         const orderId = req.params.id;
         
-        const order = await Order.findById(orderId);
+        const order = await Order.findById(orderId).populate('user', 'email');
         
         if (!order) {
             return send.sendNotFoundResponse(res, "Order not found");
         }
+
+        // Parse user info from request body
+        let adminUser;
+        try {
+            adminUser = JSON.parse(userInfo).data;
+        } catch (error) {
+            console.error("Error parsing user info:", error);
+            return send.sendBadRequestResponse(res, "Invalid user information");
+        }
         
         // Update payment status if provided
         if (isPaid !== undefined) {
+            const oldStatus = order.isPaid;
             order.isPaid = isPaid;
             // If marking as paid, set the payment date
             if (isPaid && !order.paidAt) {
                 order.paidAt = Date.now();
             }
+
+            // Log payment status change
+            if (oldStatus !== isPaid) {
+                try {
+                    // Create a log for each product in the order
+                    for (const item of order.orderItems) {
+                        await Logs.create({
+                            user: adminUser._id,
+                            action: 'update',
+                            reason: `Order #${order._id.toString().slice(-6)} payment status changed to ${isPaid ? 'paid' : 'unpaid'}`,
+                            productId: item.product,
+                            userDetails: {
+                                fullName: adminUser.name,
+                                email: adminUser.email
+                            }
+                        });
+                    }
+                } catch (logError) {
+                    console.error("Error creating payment status log:", logError);
+                }
+            }
         }
         
         // Update delivery status if provided
         if (isDelivered !== undefined) {
+            const oldStatus = order.isDelivered;
             order.isDelivered = isDelivered;
             // If marking as delivered, set the delivery date
             if (isDelivered && !order.deliveredAt) {
                 order.deliveredAt = Date.now();
+                
+                // Send delivery notification email
+                if (order.user && order.user.email) {
+                    await sendDeliveryNotification(order.user.email, order._id);
+                }
+            }
+
+            // Log delivery status change
+            if (oldStatus !== isDelivered) {
+                try {
+                    // Create a log for each product in the order
+                    for (const item of order.orderItems) {
+                        await Logs.create({
+                            user: adminUser._id,
+                            action: 'update',
+                            reason: `Order #${order._id.toString().slice(-6)} delivery status changed to ${isDelivered ? 'delivered' : 'pending'}`,
+                            productId: item.product,
+                            userDetails: {
+                                fullName: adminUser.name,
+                                email: adminUser.email
+                            }
+                        });
+                    }
+                } catch (logError) {
+                    console.error("Error creating delivery status log:", logError);
+                }
             }
         }
         
@@ -199,6 +355,7 @@ exports.updateOrderStatus = async (req, res) => {
         
         return send.sendResponse(res, 200, updatedOrder, "Order status updated successfully");
     } catch (error) {
+        console.error("Order status update error:", error);
         return send.sendISEResponse(res, error);
     }
 };

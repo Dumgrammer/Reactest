@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Success from "./modals/Success";
 import Failed from "./modals/Failed";
+import { removeItemToCartAction } from "../Actions/Cart";
 
 interface CartItem {
     _id: string;
@@ -8,11 +9,13 @@ interface CartItem {
     price: number;
     image: string;
     quantity: number;
+    size: string;
+    type: string;
 }
 
 interface CartItemsProps {
     cartItems: CartItem[];
-    onRemoveItem: (itemId: string) => void;
+    onRemoveItem: (itemId: string, size: string, type: string) => void;
 }
 
 const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
@@ -22,48 +25,70 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
     // Failed Modal
     const [isFailedOpen, setIsFailedOpen] = useState<boolean>(false);
 
+    // Update cart when localStorage changes
     useEffect(() => {
-        const storedCart = JSON.parse(localStorage.getItem("cartItems") || "[]");
-        setCart(storedCart);
+        const handleCartUpdate = () => {
+            const storedCart = JSON.parse(localStorage.getItem("cartItems") || "[]");
+            setCart(storedCart);
+        };
+
+        // Initial load
+        handleCartUpdate();
+
+        // Listen for cart updates
+        window.addEventListener('cartUpdated', handleCartUpdate);
+
+        return () => {
+            window.removeEventListener('cartUpdated', handleCartUpdate);
+        };
     }, []);
 
-    // Add this useEffect to sync with props
+    // Sync with props
     useEffect(() => {
         setCart(cartItems);
     }, [cartItems]);
 
     const handleRemove = (index: number) => {
-        const updatedCart = cart.filter((_, i) => i !== index);
-        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
-        setCart(updatedCart);
-        // Call the parent's onRemoveItem callback
-        onRemoveItem(cart[index]._id);
-        window.dispatchEvent(new Event('cartUpdated'));
-        setIsSuccessOpen(true);
-    };
-
-    const updateCart = (updatedCart: CartItem[]) => {
-        setCart(updatedCart);
-        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
-    };
-
-    const removeFromCart = (id: string) => {
-        const updatedCart = cart.filter((item) => item._id !== id);
-        setCart(updatedCart);
-        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
-    };
-
-    const changeQuantity = (id: string, amount: number) => {
-        const updatedCart = cart.map((item) =>
-            item._id === id ? { ...item, quantity: Math.max(1, item.quantity + amount) } : item
-        );
-        updateCart(updatedCart);
+        try {
+            const itemToRemove = cart[index];
+            console.log('Removing item at index:', index, {
+                size: itemToRemove.size,
+                type: itemToRemove.type,
+                name: itemToRemove.name
+            }); // Debug log
+            
+            // Create a new array without the item at the specified index
+            const updatedCart = [...cart];
+            updatedCart.splice(index, 1);
+            
+            // Update localStorage
+            localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+            
+            // Update state
+            setCart(updatedCart);
+            
+            // Notify parent
+            onRemoveItem(itemToRemove._id, itemToRemove.size, itemToRemove.type);
+            
+            // Show success message
+            setIsSuccessOpen(true);
+            
+            // Dispatch event to notify other components
+            window.dispatchEvent(new Event('cartUpdated'));
+            
+        } catch (error) {
+            console.error('Error removing item:', error);
+            setIsFailedOpen(true);
+        }
     };
 
     const handleQuantityChange = (index: number, newQuantity: number) => {
+        if (newQuantity < 1) return;
+        
         const updatedCart = [...cart];
         updatedCart[index].quantity = newQuantity;
         localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+        setCart(updatedCart);
         
         // Dispatch custom event to notify other components
         window.dispatchEvent(new Event('cartUpdated'));
@@ -75,7 +100,7 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
                 <ul role="list" className="-my-6 divide-y divide-gray-200">
                     {cart.length > 0 ? (
                         cart.map((item, index) => (
-                            <li key={item._id} className="flex py-6">
+                            <li key={`${item._id}-${item.size}-${item.type}`} className="flex py-6">
                                 <div className="size-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
                                     <img alt={item.name} src={item.image} className="size-full object-cover" />
                                 </div>
@@ -86,11 +111,14 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
                                             <h3>{item.name}</h3>
                                             <p className="ml-4">₱ {item.price * item.quantity}</p>
                                         </div>
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            Size: {item.size} | Type: {item.type}
+                                        </p>
                                     </div>
                                     <div className="flex flex-1 items-end justify-between text-sm">
                                         <div className="flex items-center space-x-2">
                                             <button
-                                                onClick={() => handleQuantityChange(index, Math.max(0, item.quantity - 1))}
+                                                onClick={() => handleQuantityChange(index, item.quantity - 1)}
                                                 className="text-gray-500 hover:text-gray-700"
                                             >
                                                 -
@@ -105,12 +133,12 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
                                         </div>
 
                                         <button
-            type="button"
-            onClick={() => handleRemove(index)}
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-        >
-            <i className="remove-cart fa fa-trash"></i>
-        </button>
+                                            type="button"
+                                            onClick={() => handleRemove(index)}
+                                            className="font-medium text-indigo-600 hover:text-indigo-500"
+                                        >
+                                            <i className="remove-cart fa fa-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </li>
@@ -120,7 +148,6 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
                     )}
                 </ul>
             </div>
-
 
             {/* Success Modal for Add to Cart */}
             <Success
@@ -137,7 +164,6 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems, onRemoveItem }) => {
             />
 
             {/* Failed Modal*/}
-            {/* not yet used */}
             <Failed
                 isOpen={isFailedOpen} 
                 title="Oops!" 

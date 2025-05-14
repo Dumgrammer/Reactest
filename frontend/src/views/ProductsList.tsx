@@ -62,6 +62,10 @@ export default function ProductsList() {
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [logs, setLogs] = useState<LogType[]>([]);
     const [showLogs, setShowLogs] = useState(false);
+    const [logsSortField, setLogsSortField] = useState<string>('createdAt');
+    const [logsSortDirection, setLogsSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [logsCurrentPage, setLogsCurrentPage] = useState(1);
+    const logsPerPage = 10;
 
     useEffect(() => {
         const getProducts = async () => {
@@ -342,6 +346,95 @@ export default function ProductsList() {
         setShowLogs(!showLogs);
     };
 
+    // Add sorting logic for logs
+    const handleLogsSort = (field: string) => {
+        if (logsSortField === field) {
+            setLogsSortDirection(logsSortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setLogsSortField(field);
+            setLogsSortDirection('asc');
+        }
+    };
+
+    const sortedLogs = [...logs].sort((a, b) => {
+        let comparison = 0;
+        
+        switch (logsSortField) {
+            case 'createdAt':
+                comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                break;
+            case 'action':
+                comparison = a.action.localeCompare(b.action);
+                break;
+            default:
+                comparison = 0;
+        }
+
+        return logsSortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    // Pagination for logs
+    const logsIndexOfLastItem = logsCurrentPage * logsPerPage;
+    const logsIndexOfFirstItem = logsIndexOfLastItem - logsPerPage;
+    const currentLogs = sortedLogs.slice(logsIndexOfFirstItem, logsIndexOfLastItem);
+    const logsTotalPages = Math.ceil(sortedLogs.length / logsPerPage);
+
+    const handleLogsPageChange = (pageNumber: number) => {
+        setLogsCurrentPage(pageNumber);
+    };
+
+    // Print functionality
+    const handlePrintLogs = () => {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Product Logs</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #f5f5f5; }
+                            .header { text-align: center; margin-bottom: 20px; }
+                            .timestamp { text-align: right; font-size: 12px; color: #666; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>Product Logs Report</h1>
+                            <p class="timestamp">Generated on: ${new Date().toLocaleString()}</p>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Product</th>
+                                    <th>Reason</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${logs.map(log => `
+                                    <tr>
+                                        <td>${`${log.user.firstname} ${log.user.middlename ? log.user.middlename + ' ' : ''}${log.user.lastname}`}<br>${log.user.email}</td>
+                                        <td>${log.action}</td>
+                                        <td>${log.productId.name}</td>
+                                        <td>${log.reason}</td>
+                                        <td>${new Date(log.createdAt).toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    };
+
     return (
         <AdminLayout>
             <div className="px-6 py-4">
@@ -415,55 +508,162 @@ export default function ProductsList() {
                             </div>
                         </div>
                     ) : showLogs ? (
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="bg-gray-50 border-b">
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {logs.map((log) => (
-                                        <tr key={log._id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm text-gray-900">
-                                                    {`${log.user.firstname} ${log.user.middlename ? log.user.middlename + ' ' : ''}${log.user.lastname}`}
+                        <div>
+                            <div className="p-4 flex justify-end">
+                                <button
+                                    onClick={handlePrintLogs}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                                >
+                                    <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    Print Logs
+                                </button>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b">
+                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                            <th 
+                                                className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                                onClick={() => handleLogsSort('action')}
+                                            >
+                                                <div className="flex items-center">
+                                                    Action
+                                                    {logsSortField === 'action' && (
+                                                        <span className="ml-1">
+                                                            {logsSortDirection === 'asc' ? '↑' : '↓'}
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                <div className="text-sm text-gray-500">{log.user.email}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                    log.action === 'archive' ? 'bg-red-100 text-red-800' :
-                                                    log.action === 'restore' ? 'bg-green-100 text-green-800' :
-                                                    'bg-blue-100 text-blue-800'
-                                                }`}>
-                                                    {log.action}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {log.productId.name}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
-                                                {log.reason}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {new Date(log.createdAt).toLocaleString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                    hour: 'numeric',
-                                                    minute: 'numeric',
-                                                    hour12: true
-                                                })}
-                                            </td>
+                                            </th>
+                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                            <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                                            <th 
+                                                className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                                onClick={() => handleLogsSort('createdAt')}
+                                            >
+                                                <div className="flex items-center">
+                                                    Date
+                                                    {logsSortField === 'createdAt' && (
+                                                        <span className="ml-1">
+                                                            {logsSortDirection === 'asc' ? '↑' : '↓'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {currentLogs.map((log) => (
+                                            <tr key={log._id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm text-gray-900">
+                                                        {`${log.user.firstname} ${log.user.middlename ? log.user.middlename + ' ' : ''}${log.user.lastname}`}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">{log.user.email}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                        log.action === 'archive' ? 'bg-red-100 text-red-800' :
+                                                        log.action === 'restore' ? 'bg-green-100 text-green-800' :
+                                                        'bg-blue-100 text-blue-800'
+                                                    }`}>
+                                                        {log.action}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {log.productId.name}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-900">
+                                                    {log.reason}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {new Date(log.createdAt).toLocaleString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        hour: 'numeric',
+                                                        minute: 'numeric',
+                                                        hour12: true
+                                                    })}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Pagination for Logs */}
+                            {logsTotalPages > 1 && (
+                                <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+                                    <div className="flex-1 flex justify-between sm:hidden">
+                                        <button
+                                            onClick={() => handleLogsPageChange(logsCurrentPage - 1)}
+                                            disabled={logsCurrentPage === 1}
+                                            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Previous
+                                        </button>
+                                        <button
+                                            onClick={() => handleLogsPageChange(logsCurrentPage + 1)}
+                                            disabled={logsCurrentPage === logsTotalPages}
+                                            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="text-sm text-gray-700">
+                                                Showing <span className="font-medium">{logsIndexOfFirstItem + 1}</span> to{' '}
+                                                <span className="font-medium">
+                                                    {Math.min(logsIndexOfLastItem, sortedLogs.length)}
+                                                </span>{' '}
+                                                of <span className="font-medium">{sortedLogs.length}</span> results
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                                <button
+                                                    onClick={() => handleLogsPageChange(logsCurrentPage - 1)}
+                                                    disabled={logsCurrentPage === 1}
+                                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    <span className="sr-only">Previous</span>
+                                                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                                {[...Array(logsTotalPages)].map((_, index) => (
+                                                    <button
+                                                        key={index + 1}
+                                                        onClick={() => handleLogsPageChange(index + 1)}
+                                                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                                            logsCurrentPage === index + 1
+                                                                ? 'z-10 bg-green-50 border-green-500 text-green-600'
+                                                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                        }`}
+                                                    >
+                                                        {index + 1}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    onClick={() => handleLogsPageChange(logsCurrentPage + 1)}
+                                                    disabled={logsCurrentPage === logsTotalPages}
+                                                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    <span className="sr-only">Next</span>
+                                                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <>
