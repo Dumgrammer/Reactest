@@ -19,6 +19,11 @@
     padding: 0;
   }
 
+  .ver-cont input {
+    width: 30px;
+    height: 30px;
+  }
+
   .header-cont {
     display: flex;
     justify-content: center;
