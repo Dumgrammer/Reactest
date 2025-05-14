@@ -293,211 +293,208 @@ const EditProductModal: React.FC<ModalProps> = ({
     <>
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
         <div className="fixed inset-0 bg-black opacity-50" onClick={onClose}></div>
-        <div className="bg-white rounded-lg shadow-lg p-8 z-10 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 md:p-8 z-10 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <h2 className="text-2xl font-bold mb-4">Edit Product</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">Edit Product</h2>
 
-            <div className="grid grid-cols-2 gap-6">
-              {/* Left Column - Images */}
-              <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700">Images</label>
-                <div className="grid grid-cols-3 gap-4">
-                  {/* Add Image Button */}
-                  <label className="cursor-pointer relative block w-full h-32 bg-gray-50 border-2 border-gray-300 border-dashed rounded-lg hover:bg-gray-100 transition-colors">
-                    <input
-                      type="file"
-                      onChange={handleImageChange}
-                      accept="image/*"
-                      multiple
-                      className="hidden"
+            {/* Images Section - Now on top */}
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-700">Images</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {/* Add Image Button */}
+                <label className="cursor-pointer relative block w-full h-24 sm:h-32 bg-gray-50 border-2 border-gray-300 border-dashed rounded-lg hover:bg-gray-100 transition-colors">
+                  <input
+                    type="file"
+                    onChange={handleImageChange}
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <svg 
+                        className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400" 
+                        stroke="currentColor" 
+                        fill="none" 
+                        viewBox="0 0 48 48" 
+                        aria-hidden="true"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M24 12v24m12-12H12" 
+                        />
+                      </svg>
+                      <span className="mt-1 sm:mt-2 block text-xs sm:text-sm font-medium text-gray-500">
+                        Add Images
+                      </span>
+                    </div>
+                  </div>
+                </label>
+
+                {/* Existing Image Previews */}
+                {existingImages.map((imgUrl, index) => (
+                  <div key={`existing-${index}`} className="relative w-full h-24 sm:h-32">
+                    <img
+                      src={imgUrl}
+                      alt={`Product ${index + 1}`}
+                      className="w-full h-full object-cover rounded-lg"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <svg 
-                          className="mx-auto h-12 w-12 text-gray-400" 
-                          stroke="currentColor" 
-                          fill="none" 
-                          viewBox="0 0 48 48" 
-                          aria-hidden="true"
-                        >
-                          <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
-                            d="M24 12v24m12-12H12" 
-                          />
-                        </svg>
-                        <span className="mt-2 block text-sm font-medium text-gray-500">
-                          Add Images
-                        </span>
-                      </div>
-                    </div>
-                  </label>
+                    <button
+                      type="button"
+                      onClick={() => removeExistingImage(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
 
-                  {/* Existing Image Previews */}
-                  {existingImages.map((imgUrl, index) => (
-                    <div key={`existing-${index}`} className="relative w-full h-32">
-                      <img
-                        src={imgUrl}
-                        alt={`Product ${index + 1}`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
+                {/* New Image Previews */}
+                {newImagePreviews.map((preview, index) => (
+                  <div key={`new-${index}`} className="relative w-full h-24 sm:h-32">
+                    <img
+                      src={preview}
+                      alt={`New preview ${index + 1}`}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeNewImage(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Form Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <input
+                  type="text"
+                  value={productName}
+                  onChange={(e) => setProductName(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Select a category</option>
+                  <option value="Clothing">Clothing</option>
+                  <option value="Books">Books</option>
+                  <option value="Footwear">Footwear</option>
+                  <option value="Accessories">Accessories</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Price</label>
+                <input
+                  type="number"
+                  value={productPrice}
+                  onChange={(e) => setProductPrice(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <textarea
+                  value={productDescription}
+                  onChange={(e) => setProductDescription(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  rows={3}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Types</label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {types.map((type, index) => (
+                    <span
+                      key={index}
+                      className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center"
+                    >
+                      {type}
                       <button
                         type="button"
-                        onClick={() => removeExistingImage(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                        onClick={() => removeType(type)}
+                        className="ml-2 text-blue-600 hover:text-blue-800"
                       >
                         ×
                       </button>
-                    </div>
+                    </span>
                   ))}
-
-                  {/* New Image Previews */}
-                  {newImagePreviews.map((preview, index) => (
-                    <div key={`new-${index}`} className="relative w-full h-32">
-                      <img
-                        src={preview}
-                        alt={`New preview ${index + 1}`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeNewImage(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
+                </div>
+                <div className="flex mt-2">
+                  <input
+                    type="text"
+                    value={newType}
+                    onChange={(e) => setNewType(e.target.value)}
+                    onKeyPress={handleTypeKeyPress}
+                    className="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Add type"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddType}
+                    className="bg-blue-500 text-white px-4 rounded-r-md hover:bg-blue-600"
+                  >
+                    Add
+                  </button>
                 </div>
               </div>
 
-              {/* Right Column - Form Fields */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Name</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Sizes</label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {sizes.map((size, index) => (
+                    <span
+                      key={index}
+                      className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm flex items-center"
+                    >
+                      {size}
+                      <button
+                        type="button"
+                        onClick={() => removeSize(size)}
+                        className="ml-2 text-green-600 hover:text-green-800"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex mt-2">
                   <input
                     type="text"
-                    value={productName}
-                    onChange={(e) => setProductName(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    required
+                    value={newSize}
+                    onChange={(e) => setNewSize(e.target.value)}
+                    onKeyPress={handleSizeKeyPress}
+                    className="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Add size"
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
-                  <textarea
-                    value={productDescription}
-                    onChange={(e) => setProductDescription(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    rows={3}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    required
+                  <button
+                    type="button"
+                    onClick={handleAddSize}
+                    className="bg-green-500 text-white px-4 rounded-r-md hover:bg-green-600"
                   >
-                    <option value="">Select a category</option>
-                    <option value="Clothing">Clothing</option>
-                    <option value="Books">Books</option>
-                    <option value="Footwear">Footwear</option>
-                    <option value="Accessories">Accessories</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Types</label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {types.map((type, index) => (
-                      <span
-                        key={index}
-                        className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center"
-                      >
-                        {type}
-                        <button
-                          type="button"
-                          onClick={() => removeType(type)}
-                          className="ml-2 text-blue-600 hover:text-blue-800"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex mt-2">
-                    <input
-                      type="text"
-                      value={newType}
-                      onChange={(e) => setNewType(e.target.value)}
-                      onKeyPress={handleTypeKeyPress}
-                      className="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Add type"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddType}
-                      className="bg-blue-500 text-white px-4 rounded-r-md hover:bg-blue-600"
-                    >
-                      Add
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Price</label>
-                  <input
-                    type="number"
-                    value={productPrice}
-                    onChange={(e) => setProductPrice(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                {/* Sizes */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Sizes</label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {sizes.map((size, index) => (
-                      <span
-                        key={index}
-                        className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm flex items-center"
-                      >
-                        {size}
-                        <button
-                          type="button"
-                          onClick={() => removeSize(size)}
-                          className="ml-2 text-green-600 hover:text-green-800"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex mt-2">
-                    <input
-                      type="text"
-                      value={newSize}
-                      onChange={(e) => setNewSize(e.target.value)}
-                      onKeyPress={handleSizeKeyPress}
-                      className="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Add size"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddSize}
-                      className="bg-green-500 text-white px-4 rounded-r-md hover:bg-green-600"
-                    >
-                      Add
-                    </button>
-                  </div>
+                    Add
+                  </button>
                 </div>
               </div>
             </div>
@@ -524,13 +521,13 @@ const EditProductModal: React.FC<ModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                className="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+                className="px-3 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
                 disabled={loading}
               >
                 {loading ? "Updating..." : "Update Product"}
