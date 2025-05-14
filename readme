@@ -1,24 +1,24 @@
-# Gordon College Campus Cart
+# 🎓 Gordon College Campus Cart
 
-Gordon College Campus Cart (Campus Cart) is a web-based platform for product ordering, management, and delivery within the Gordon College campus. It features a modern React frontend and a Node.js/Express backend, providing a seamless experience for both users and administrators.
+**Gordon College Campus Cart** is an easy-to-use online platform for browsing, ordering, and managing products within the Gordon College campus. Shop conveniently and efficiently—whether you’re a student or staff!
 
-**Live Demo:** [https://gccampuscart.online](https://gccampuscart.online)
-
----
-
-## Features
-
-- User registration and email verification
-- Product browsing, search, and ordering
-- Shopping cart with real-time updates
-- Checkout with GCash or Cash on Pickup
-- Order tracking and order history
-- Admin dashboard for managing users, products, and orders
-- Email notifications for account and order updates
+🌐 **Live Demo:** [gccampuscart.online](https://gccampuscart.online)
 
 ---
 
-## Project Structure
+## ✨ Features
+
+- 🛒 User registration and email verification
+- 🔍 Product browsing, search, and ordering
+- 🛍️ Shopping cart with real-time updates
+- 💸 Checkout with GCash or Cash on Pickup
+- 📦 Order tracking and order history
+- 🛠️ Admin dashboard for managing users, products, and orders
+- 📧 Email notifications for account and order updates
+
+---
+
+## 📁 Project Structure
 
 ```
 api/        # Node.js/Express backend (REST API)
@@ -27,7 +27,7 @@ frontend/   # React frontend application
 
 ---
 
-## Getting Started (Development)
+## 🚀 Getting Started (Development)
 
 ### Prerequisites
 
@@ -37,41 +37,26 @@ frontend/   # React frontend application
 
 ### Backend Setup (`api/`)
 
-1. Navigate to the backend folder:
-    ```sh
-    cd api
-    ```
-2. Install dependencies:
-    ```sh
-    npm install
-    ```
-3. Configure environment variables:
-    - Copy `.env.example` to `.env` and update the values.
-4. Start the backend server:
-    ```sh
-    npm start
-    ```
-    The backend runs on [http://localhost:8080](http://localhost:8080) by default.
+```sh
+cd api
+npm install
+# Copy .env.example to .env and update the values
+npm start
+```
+_Backend runs on [http://localhost:8080](http://localhost:8080) by default._
 
 ### Frontend Setup (`frontend/`)
 
-1. Navigate to the frontend folder:
-    ```sh
-    cd frontend
-    ```
-2. Install dependencies:
-    ```sh
-    npm install
-    ```
-3. Start the frontend development server:
-    ```sh
-    npm start
-    ```
-    The frontend runs on [http://localhost:3000](http://localhost:3000).
+```sh
+cd frontend
+npm install
+npm start
+```
+_Frontend runs on [http://localhost:3000](http://localhost:3000)._
 
 ---
 
-## Deployment
+## 🌍 Deployment
 
 The application is deployed on a custom Linux server. The domain was purchased from Hostinger and DNS is managed via Cloudflare.
 
@@ -122,19 +107,19 @@ The application is deployed on a custom Linux server. The domain was purchased f
 
 ---
 
-## Usage
+## 📝 Usage
 
-- Visit [https://gccampuscart.online](https://gccampuscart.online) to use the deployed application.
-- Register or log in to your account.
-- Browse products, add items to your cart, and proceed to checkout.
-- Track your orders and receive notifications.
+- Visit [gccampuscart.online](https://gccampuscart.online)
+- Register or log in to your account
+- Browse products, add items to your cart, and proceed to checkout
+- Track your orders and receive notifications
 
 ---
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License.
 
 ---
 
-*Developed for Gordon College campus use.*
+> _Developed for Gordon College campus use._
